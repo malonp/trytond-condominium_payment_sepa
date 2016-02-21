@@ -1,0 +1,145 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+
+msgctxt "field:company.company,creditor_bussines_code:"
+msgid "Creditor Bussines Code"
+msgstr "Código de negocio"
+
+msgctxt "field:company.company,sepa_creditor_identifier:"
+msgid "SEPA Creditor Identifier"
+msgstr "Identificación del acreedor"
+
+msgctxt "help:company.company,creditor_bussines_code:"
+msgid "Code used in the SEPA Creditor Identifier"
+msgstr "Código utilizado en la obtención del identificador del acreedor (AT-02)"
+
+
+msgctxt "field:party.party,companies:"
+msgid "Companies"
+msgstr "Comunidad de Propietarios"
+
+msgctxt "field:party.party,sepa_mandates:"
+msgid "SEPA Mandates"
+msgstr "Ordenes de Domiciliación"
+
+
+msgctxt "field:condo.account.payment.sepa.mandate,company:"
+msgid "Condominium"
+msgstr "Com. de Propietarios"
+
+msgctxt "field:condo.account.payment.sepa.mandate,party:"
+msgid "Party"
+msgstr "Tercero"
+
+msgctxt "field:condo.account.payment.sepa.mandate,account_number:"
+msgid "Account Number"
+msgstr "Cuenta Bancaria"
+
+msgctxt "field:condo.account.payment.sepa.mandate,identification:"
+msgid "Identification"
+msgstr "Identificación"
+
+msgctxt "field:condo.account.payment.sepa.mandate,type:"
+msgid "Type"
+msgstr "Tipo"
+
+msgctxt "field:condo.account.payment.sepa.mandate,scheme:"
+msgid "Scheme"
+msgstr "Modalidad"
+
+msgctxt "field:condo.account.payment.sepa.mandate,signature_date:"
+msgid "Signature Date"
+msgstr "Fecha de firma"
+
+msgctxt "field:condo.account.payment.sepa.mandate,state:"
+msgid "State"
+msgstr "Situación"
+
+
+msgctxt "selection:condo.account.payment.sepa.mandate,type:"
+msgid "Recurrent"
+msgstr "Recurrente"
+
+msgctxt "selection:condo.account.payment.sepa.mandate,type:"
+msgid "One-off"
+msgstr "Único"
+
+msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgid "Requested"
+msgstr "Solicitado"
+
+msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgid "Validated"
+msgstr "Firmado"
+
+msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgid "Canceled"
+msgstr "Anulado"
+
+
+msgctxt "view:company.company:"
+msgid "Accounting"
+msgstr "Facturaciones"
+
+msgctxt "view:company.company:"
+msgid "Creditor Identifier"
+msgstr "Identificación del acreedor (AT-02)"
+
+msgctxt "view:company.company:"
+msgid "Calculate"
+msgstr "Calcular"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Mandate"
+msgstr "Orden Domiciliación"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Cancel"
+msgstr "Anular"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Are you sure to cancel the mandate?"
+msgstr "Confirma anulación de la orden?"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Request"
+msgstr "Solicitado"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Validate"
+msgstr "Firmado"
+
+msgctxt "view:condo.account.payment.sepa.mandate:"
+msgid "Mandates"
+msgstr "Ordenes de Domiciliación"
+
+
+msgctxt "model:ir.action,name:act_mandate_form"
+msgid "SEPA Mandates"
+msgstr "Ordenes de Domiciliación"
+
+msgctxt "model:ir.ui.menu,name:menu_mandate_form"
+msgid "SEPA Mandates"
+msgstr "Mandatos SEPA"
+
+msgctxt "model:ir.action,name:report_condo_mandate"
+msgid "Mandate"
+msgstr "Formulario orden domiciliación"
+
+msgctxt "error:company.company:"
+msgid "This sepa creditor identifier is already in use!"
+msgstr "Esta identificación del acreedor ya existe!"
+
+msgctxt "error:condo.account.payment.sepa.mandate:"
+msgid "The identification of the SEPA mandate must be unique in a company."
+msgstr "Este identificador SEPA está en uso en esta comunidad"
