@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<form string="Direct Debit Message">
+    <label name="reference"/>
+    <field name="reference"/>
+    <newline/>
+    <label name="company"/>
+    <field name="company"/>
+    <label name="sepa_receivable_flavor"/>
+    <field name="sepa_receivable_flavor"/>
+    <notebook>
+        <page string="Payments" id="list">
+            <field name="groups" colspan="4" widget="one2many"/>
+        </page>
+        <page string="File" id="csv">
+            <field name="message" widget="binary" filename="filename"/>
+            <field name="message" colspan="6"/>
+        </page>
+    </notebook>
+
+    <button name="generate_message" string="Generate Message" colspan="4"/>
+</form>

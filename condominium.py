@@ -19,25 +19,29 @@
 #
 ##############################################################################
 
-from trytond.pool import Pool
-from .payment import *
-from .party import *
-from .company import *
-from .condominium import *
-from .bank import *
 
-def register():
-    Pool.register(
-        Company,
-        CondoMandate,
-        CondoPain,
-        CondoParty,
-        CondoPaymentGroup,
-        CondoPaymentGroupPain,
-        CondoPayment,
-        BankAccountNumber,
-        Party,
-        module='condominium_payment_sepa', type_='model')
-    Pool.register(
-        CondoMandateReport,
-        module='condominium_payment_sepa', type_='report')
+from trytond.model import fields
+from trytond.pool import PoolMeta
+from trytond.pyson import Eval
+
+
+__all__ = ['CondoParty']
+__metaclass__ = PoolMeta
+
+
+class CondoParty:
+    'Condominium Party'
+    __name__ = 'condo.party'
+    company = fields.Function(fields.Many2One('company.company',
+            'Company'), 'on_change_with_company')
+    sepa_mandate = fields.Many2One('condo.account.payment.sepa.mandate', 'Mandate',
+        help="SEPA Mandate of this party for the unit",
+        depends=['isactive', 'company'], domain=[('company', '=', Eval('company'))],
+        ondelete='CASCADE', states={
+            'readonly': ~Eval('isactive')
+            })
+
+    @fields.depends('unit')
+    def on_change_with_company(self, name=None):
+        if self.unit:
+            return self.unit.company.id

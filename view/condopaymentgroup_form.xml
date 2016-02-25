@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<form string="Payment Group">
+    <label name="reference"/>
+    <field name="reference"/>
+    <label name="date"/>
+    <field name="date"/>
+    <newline/>
+    <label name="company"/>
+    <field name="company"/>
+    <label name="account_number"/>
+    <field name="account_number"/>
+    <newline/>
+    <label name="sepa_batch_booking"/>
+    <field name="sepa_batch_booking"/>
+    <label name="sepa_charge_bearer"/>
+    <field name="sepa_charge_bearer"/>
+
+    <notebook>
+        <page string="Payments" id="list">
+            <field name="payments" mode="tree,form" colspan="4"
+                view_ids="condominium_payment_sepa.condopayment_view_list,condominium_payment_sepa.condopayment_view_form"/>
+        </page>
+        <page string="Information" id="csv">
+            <field name="message" widget="binary" filename="filename"/>
+            <field name="message" colspan="6"/>
+        </page>
+    </notebook>
+
+    <newline/>
+    <button name="generate_message" string="Generate Message" colspan="4"/>
+</form>

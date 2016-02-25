@@ -5,12 +5,50 @@ this repository contains the full copyright notices and license terms. -->
     <data>
 
 <!-- Add icons -->
+        <record model="ir.ui.icon" id="condo_payments_pain_icon">
+            <field name="name">condo_pain</field>
+            <field name="path">icons/task-complete.svg</field>
+        </record>
+
+        <record model="ir.ui.icon" id="condo_payments_group_icon">
+            <field name="name">condo_group</field>
+            <field name="path">icons/hierarchy-levels.svg</field>
+        </record>
+
+        <record model="ir.ui.icon" id="condo_payments_icon">
+            <field name="name">condo_payment</field>
+            <field name="path">icons/dollar-sign-and-piles-of-coins.svg</field>
+        </record>
+
         <record model="ir.ui.icon" id="condo_mandate_icon">
             <field name="name">condo_mandate</field>
-            <field name="path">icons/document199.svg</field>
+            <field name="path">icons/signing-the-contract.svg</field>
+        </record>
+
+        <record model="ir.ui.icon" id="condo_financial_icon">
+            <field name="name">condo_financial</field>
+            <field name="path">icons/bank-building.svg</field>
         </record>
 
 <!-- Form View -->
+        <record model="ir.ui.view" id="condopain_view_form">
+            <field name="model">condo.payment.pain</field>
+            <field name="type">form</field>
+            <field name="name">condopain_form</field>
+        </record>
+
+        <record model="ir.ui.view" id="condopaymentgroup_view_form">
+            <field name="model">condo.payment.group</field>
+            <field name="type">form</field>
+            <field name="name">condopaymentgroup_form</field>
+        </record>
+
+        <record model="ir.ui.view" id="condopayment_view_form">
+            <field name="model">condo.account.payment</field>
+            <field name="type">form</field>
+            <field name="name">condopayment_form</field>
+        </record>
+
         <record model="ir.ui.view" id="mandate_view_form">
             <field name="model">condo.account.payment.sepa.mandate</field>
             <field name="type">form</field>
@@ -18,6 +56,24 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
 <!-- List View -->
+        <record model="ir.ui.view" id="condopain_view_list">
+            <field name="model">condo.payment.pain</field>
+            <field name="type">tree</field>
+            <field name="name">condopain_list</field>
+        </record>
+
+        <record model="ir.ui.view" id="condopaymentgroup_view_list">
+            <field name="model">condo.payment.group</field>
+            <field name="type">tree</field>
+            <field name="name">condopaymentgroup_list</field>
+        </record>
+
+        <record model="ir.ui.view" id="condopayment_view_list">
+            <field name="model">condo.account.payment</field>
+            <field name="type">tree</field>
+            <field name="name">condopayment_list</field>
+        </record>
+
         <record model="ir.ui.view" id="mandate_view_list">
             <field name="model">condo.account.payment.sepa.mandate</field>
             <field name="type">tree</field>
@@ -25,6 +81,71 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
 <!-- Actions -->
+        <record model="ir.action.act_window" id="act_condopain_form">
+            <field name="name">Direct Debit Message</field>
+            <field name="res_model">condo.payment.pain</field>
+        </record>
+
+        <record model="ir.action.act_window" id="act_condopaymentgroup_form">
+            <field name="name">Payment Group</field>
+            <field name="res_model">condo.payment.group</field>
+        </record>
+
+        <record model="ir.action.act_window" id="act_condopayment_form">
+            <field name="name">Payment</field>
+            <field name="res_model">condo.account.payment</field>
+        </record>
+
+        <record model="ir.action.act_window.view"
+            id="act_payment_form_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="condopayment_view_list"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.view"
+            id="act_payment_form_view2">
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="condopayment_view_form"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.domain" id="act_condopayment_form_domain_draft">
+            <field name="name">Draft</field>
+            <field name="sequence" eval="10"/>
+            <field name="domain" eval="[('state', '=', 'draft')]" pyson="1"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.domain" id="act_condopayment_form_domain_approved">
+            <field name="name">Approved</field>
+            <field name="sequence" eval="20"/>
+            <field name="domain" eval="[('state', '=', 'approved')]" pyson="1"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.domain" id="act_condopayment_form_domain_processing">
+            <field name="name">Processing</field>
+            <field name="sequence" eval="30"/>
+            <field name="domain" eval="[('state', '=', 'processing')]" pyson="1"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.domain" id="act_condopayment_form_domain_suceeded">
+            <field name="name">Succeeded</field>
+            <field name="sequence" eval="40"/>
+            <field name="domain" eval="[('state', '=', 'succeeded')]" pyson="1"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.domain" id="act_condopayment_form_domain_failed">
+            <field name="name">Failed</field>
+            <field name="sequence" eval="50"/>
+            <field name="domain" eval="[('state', '=', 'failed')]" pyson="1"/>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+        <record model="ir.action.act_window.domain" id="act_condopayment_form_domain_all">
+            <field name="name">All</field>
+            <field name="sequence" eval="9999"/>
+            <field name="domain"></field>
+            <field name="act_window" ref="act_condopayment_form"/>
+        </record>
+
+
         <record model="ir.action.act_window" id="act_mandate_form">
             <field name="name">SEPA Mandates</field>
             <field name="res_model">condo.account.payment.sepa.mandate</field>
@@ -56,6 +177,21 @@ this repository contains the full copyright notices and license terms. -->
         <menuitem name="SEPA Mandates" parent="condominium.menu_condominium" 
             sequence="40" action="act_mandate_form" 
             id="menu_mandate_form" icon="condo_mandate"/>
+
+        <menuitem name="Financial" parent="condominium.menu_condominium"
+            sequence="50" id="menu_condofinancial_form" icon="condo_financial"/>
+
+        <menuitem name="Payment" parent="menu_condofinancial_form"
+            sequence="10" action="act_condopayment_form"
+            id="menu_payment_form" icon="condo_payment"/>
+
+        <menuitem name="Group" parent="menu_condofinancial_form"
+            sequence="20" action="act_condopaymentgroup_form"
+            id="menu_paymentgroup_form" icon="condo_group"/>
+
+        <menuitem name="SDD Messages" parent="menu_condofinancial_form"
+            sequence="30" action="act_condopain_form"
+            id="menu_pain_form" icon="condo_pain"/>
 
         <!--record model="ir.rule.group" id="rule_group_mandate">
             <field name="model" search="[('model', '=', 'condo.sepa.mandate')]"/>
