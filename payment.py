@@ -91,7 +91,7 @@ class CondoPain(ModelSQL, ModelView):
     @property
     def sepa_payments(self):
         keyfunc = self.sepa_group_payment_key
-        payments = sorted(self.groups.payments, key=keyfunc)
+        payments = sorted([payment for group in self.groups for payment in group.payments], key=keyfunc)
         for key, grouped_payments in groupby(payments, key=keyfunc):
             yield dict(key), list(grouped_payments)
 
@@ -105,16 +105,11 @@ class CondoPain(ModelSQL, ModelView):
         pool = Pool()
         for pain in pains:
             tmpl = pain.get_sepa_template()
-            for group in pain.groups:
-                message = tmpl.generate(group=group,
-                    datetime=datetime, normalize=unicodedata.normalize,
-                    ).filter(remove_comment).render()
-                if pain.message:
-                    pain.message += message
-                else:
-                    pain.message = message
+            message = tmpl.generate(pain=pain,
+                datetime=datetime, normalize=unicodedata.normalize,
+                ).filter(remove_comment).render()
+            pain.message = message
             pain.save()
-#TODO
 
 
 def remove_comment(stream):
