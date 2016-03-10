@@ -30,5 +30,5 @@ __all__ = ['Party']
 class Party:
     __name__ = 'party.party'
     companies = fields.One2Many('company.company', 'party', 'Companies')
-    sepa_mandates = fields.One2Many('condo.account.payment.sepa.mandate', 'party',
+    sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'party',
         'SEPA Mandates')

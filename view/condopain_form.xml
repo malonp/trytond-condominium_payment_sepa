@@ -10,8 +10,8 @@ this repository contains the full copyright notices and license terms. -->
     <label name="sepa_receivable_flavor"/>
     <field name="sepa_receivable_flavor"/>
     <notebook>
-        <page string="Payments" id="list">
-            <field name="groups" colspan="4" widget="one2many"/>
+        <page string="Payments Groups" id="list">
+            <field name="groups" colspan="4" widget="many2many"/>
         </page>
         <page string="File" id="csv">
             <field name="message" widget="binary" filename="filename"/>

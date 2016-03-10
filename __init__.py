@@ -33,7 +33,6 @@ def register():
         CondoPain,
         CondoParty,
         CondoPaymentGroup,
-        CondoPaymentGroupPain,
         CondoPayment,
         BankAccountNumber,
         Party,

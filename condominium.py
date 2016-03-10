@@ -34,10 +34,12 @@ class CondoParty:
     __name__ = 'condo.party'
     company = fields.Function(fields.Many2One('company.company',
             'Company'), 'on_change_with_company')
-    sepa_mandate = fields.Many2One('condo.account.payment.sepa.mandate', 'Mandate',
+    sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
-        depends=['isactive', 'company'], domain=[('company', '=', Eval('company'))],
-        ondelete='CASCADE', states={
+        depends=['isactive', 'company'],
+        domain=[('company', '=', Eval('company')),
+                ('state', 'not in', ['canceled'])],
+        ondelete='SET NULL', states={
             'readonly': ~Eval('isactive')
             })
 

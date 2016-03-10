@@ -3,88 +3,266 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
 
+msgctxt "field:bank.account.number,mandates:"
+msgid "Mandates"
+msgstr "Ordenes de Domiciliación"
+
+
+msgctxt "field:company.company,groups_payments:"
+msgid "Condominium Payment Group"
+msgstr "Facturaciones de la Comunidad"
+
 msgctxt "field:company.company,creditor_bussines_code:"
 msgid "Creditor Bussines Code"
-msgstr "Código de negocio"
+msgstr "Código de Negocio"
 
 msgctxt "field:company.company,sepa_creditor_identifier:"
 msgid "SEPA Creditor Identifier"
-msgstr "Identificación del acreedor"
+msgstr "Identificación del Acreedor"
 
 msgctxt "help:company.company,creditor_bussines_code:"
 msgid "Code used in the SEPA Creditor Identifier"
 msgstr "Código utilizado en la obtención del identificador del acreedor (AT-02)"
 
 
+msgctxt "field:condo.party,company:"
+msgid "Company"
+msgstr "Com. de Propietarios"
+
+msgctxt "field:condo.party,sepa_mandate:"
+msgid "Mandate"
+msgstr "Orden de Domiliación"
+
+msgctxt "help:condo.party,sepa_mandate:"
+msgid "SEPA Mandate of this party for the unit"
+msgstr "Orden de domiciliación de este tercero para recibos del inmueble"
+
+
 msgctxt "field:party.party,companies:"
 msgid "Companies"
-msgstr "Comunidad de Propietarios"
+msgstr "Com. de Propietarios"
 
 msgctxt "field:party.party,sepa_mandates:"
 msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
 
-msgctxt "field:condo.account.payment.sepa.mandate,company:"
+msgctxt "field:condo.payment.pain,reference:"
+msgid "Reference"
+msgstr "Referencia"
+
+msgctxt "field:condo.payment.pain,company:"
+msgid "Initiating Party"
+msgstr "Presentador"
+
+msgctxt "field:condo.payment.pain,sepa_receivable_flavor:"
+msgid "Receivable Flavor"
+msgstr "Version pain"
+
+msgctxt "field:condo.payment.pain,groups:"
+msgid "Payments Groups"
+msgstr "Facturaciones"
+
+
+msgctxt "field:condo.payment.group,reference:"
+msgid "Reference"
+msgstr "Referencia"
+
+msgctxt "field:condo.payment.group,company:"
 msgid "Condominium"
 msgstr "Com. de Propietarios"
 
-msgctxt "field:condo.account.payment.sepa.mandate,party:"
-msgid "Party"
-msgstr "Tercero"
+msgctxt "field:condo.payment.group,pain:"
+msgid "Pain Message"
+msgstr "Mensaje de presentación de adeudos"
 
-msgctxt "field:condo.account.payment.sepa.mandate,account_number:"
+msgctxt "field:condo.payment.group,account_number:"
 msgid "Account Number"
 msgstr "Cuenta Bancaria"
 
-msgctxt "field:condo.account.payment.sepa.mandate,identification:"
+msgctxt "field:condo.payment.group,date:"
+msgid "Debit Date"
+msgstr "Fecha del Adeudo"
+
+msgctxt "field:condo.payment.group,payments:"
+msgid "Payments"
+msgstr "Recibos"
+
+msgctxt "field:condo.payment.group,sepa_batch_booking:"
+msgid "Batch Booking"
+msgstr "Indicador apunte en cuenta"
+
+msgctxt "field:condo.payment.group,sepa_charge_bearer:"
+msgid "Charge Bearer"
+msgstr "Clausula de Gastos"
+
+msgctxt "field:condo.payment.group,message:"
+msgid "Message"
+msgstr "Mensaje"
+
+msgctxt "field:condo.payment.group,nboftxs:"
+msgid "Number of Transactions"
+msgstr "Núm. Operaciones"
+
+msgctxt "field:condo.payment.group,ctrlsum:"
+msgid "Control Sum"
+msgstr "Suma de Control"
+
+
+msgctxt "field:condo.payment,group:"
+msgid "Group"
+msgstr "Facturación"
+
+msgctxt "field:condo.payment,company:"
+msgid "Company"
+msgstr "Com. de Propietarios"
+
+msgctxt "field:condo.payment,fee:"
+msgid "Fee"
+msgstr "Recibo"
+
+msgctxt "help:condo.payment,fee:"
+msgid "Check if this payment correspond to unit's fee"
+msgstr "Seleccionar si corresponde a un recibo de un inmueble"
+
+msgctxt "field:condo.payment,unit:"
+msgid "Unit"
+msgstr "Inmueble"
+
+msgctxt "field:condo.payment,unit_name:"
+msgid "Unit"
+msgstr "Inmueble"
+
+msgctxt "field:condo.payment,party:"
+msgid "Ultimate Debtor"
+msgstr "Ultimo Deudor"
+
+msgctxt "field:condo.payment,description:"
+msgid "Description"
+msgstr "Concepto"
+
+msgctxt "field:condo.payment,currency:"
+msgid "Currency"
+msgstr "Moneda"
+
+msgctxt "field:condo.payment,currency_digits:"
+msgid "Currency Digits"
+msgstr "Decimales de la moneda"
+
+msgctxt "field:condo.payment,amount:"
+msgid "Amount"
+msgstr "Importe"
+
+msgctxt "field:condo.payment,sepa_mandate:"
+msgid "Mandate"
+msgstr "Orden de Domiciliación"
+
+msgctxt "field:condo.payment,debtor:"
+msgid "Debtor"
+msgstr "Deudor"
+
+msgctxt "field:condo.payment,type:"
+msgid "Sequence Type"
+msgstr "Secuencia del Adeudo"
+
+msgctxt "field:condo.payment,sepa_end_to_end_id:"
+msgid "SEPA End To End ID"
+msgstr "Identificación Extremo a Extremo"
+
+msgctxt "field:condo.payment,date:"
+msgid "Debit Date"
+msgstr "Fecha del Adeudo"
+
+msgctxt "field:condo.payment,state:"
+msgid "State"
+msgstr "Estado"
+
+
+msgctxt "field:condo.payment.sepa.mandate,company:"
+msgid "Condominium"
+msgstr "Com. de Propietarios"
+
+msgctxt "field:condo.payment.sepa.mandate,party:"
+msgid "Party"
+msgstr "Tercero"
+
+msgctxt "field:condo.payment.sepa.mandate,condoparties:"
+msgid "Parties"
+msgstr "Partícipes"
+
+msgctxt "field:condo.payment.sepa.mandate,account_number:"
+msgid "Account Number"
+msgstr "Cuenta Bancaria"
+
+msgctxt "field:condo.payment.sepa.mandate,identification:"
 msgid "Identification"
 msgstr "Identificación"
 
-msgctxt "field:condo.account.payment.sepa.mandate,type:"
+msgctxt "field:condo.payment.sepa.mandate,type:"
 msgid "Type"
 msgstr "Tipo"
 
-msgctxt "field:condo.account.payment.sepa.mandate,scheme:"
+msgctxt "field:condo.payment.sepa.mandate,scheme:"
 msgid "Scheme"
 msgstr "Modalidad"
 
-msgctxt "field:condo.account.payment.sepa.mandate,signature_date:"
+msgctxt "field:condo.payment.sepa.mandate,signature_date:"
 msgid "Signature Date"
-msgstr "Fecha de firma"
+msgstr "Fecha de Firma"
 
-msgctxt "field:condo.account.payment.sepa.mandate,state:"
+msgctxt "field:condo.payment.sepa.mandate,state:"
 msgid "State"
 msgstr "Situación"
 
 
-msgctxt "selection:condo.account.payment.sepa.mandate,type:"
-msgid "Recurrent"
-msgstr "Recurrente"
-
-msgctxt "selection:condo.account.payment.sepa.mandate,type:"
-msgid "One-off"
-msgstr "Único"
-
-msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgctxt "selection:condo.payment,state:"
 msgid "Draft"
 msgstr "Borrador"
 
-msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgctxt "selection:condo.payment,state:"
+msgid "Approved"
+msgstr "Aprobado"
+
+msgctxt "selection:condo.payment,state:"
+msgid "Processing"
+msgstr "En proceso"
+
+msgctxt "selection:condo.payment,state:"
+msgid "Succeeded"
+msgstr "Con éxito"
+
+msgctxt "selection:condo.payment,state:"
+msgid "Failed'"
+msgstr "Fallado"
+
+
+msgctxt "selection:condo.payment.sepa.mandate,type:"
+msgid "Recurrent"
+msgstr "Recurrente"
+
+msgctxt "selection:condo.payment.sepa.mandate,type:"
+msgid "One-off"
+msgstr "Único"
+
+msgctxt "selection:condo.payment.sepa.mandate,state:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "selection:condo.payment.sepa.mandate,state:"
 msgid "Requested"
 msgstr "Solicitado"
 
-msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgctxt "selection:condo.payment.sepa.mandate,state:"
 msgid "Validated"
 msgstr "Firmado"
 
-msgctxt "selection:condo.account.payment.sepa.mandate,state:"
+msgctxt "selection:condo.payment.sepa.mandate,state:"
 msgid "Canceled"
 msgstr "Anulado"
 
 
 msgctxt "view:company.company:"
-msgid "Accounting"
+msgid "Invoicing"
 msgstr "Facturaciones"
 
 msgctxt "view:company.company:"
@@ -95,33 +273,133 @@ msgctxt "view:company.company:"
 msgid "Calculate"
 msgstr "Calcular"
 
-msgctxt "view:condo.account.payment.sepa.mandate:"
+
+msgctxt "view:condo.payment:"
+msgid "Payments"
+msgstr "Recibos"
+
+msgctxt "view:condo.payment:"
+msgid "Description"
+msgstr "Descripción"
+
+msgctxt "view:condo.payment:"
 msgid "Mandate"
-msgstr "Orden Domiciliación"
+msgstr "Orden de Domiciliación"
 
-msgctxt "view:condo.account.payment.sepa.mandate:"
-msgid "Cancel"
-msgstr "Anular"
-
-msgctxt "view:condo.account.payment.sepa.mandate:"
-msgid "Are you sure to cancel the mandate?"
-msgstr "Confirma anulación de la orden?"
-
-msgctxt "view:condo.account.payment.sepa.mandate:"
+msgctxt "view:condo.payment:"
 msgid "Draft"
 msgstr "Borrador"
 
-msgctxt "view:condo.account.payment.sepa.mandate:"
+msgctxt "view:condo.payment:"
+msgid "Approve"
+msgstr "Aprobado"
+
+msgctxt "view:condo.payment:"
+msgid "Fail"
+msgstr "Fallado"
+
+msgctxt "view:condo.payment:"
+msgid "Succeed"
+msgstr "Con éxito"
+
+
+msgctxt "view:condo.payment.group:"
+msgid "Payment Group"
+msgstr "Facturaciones"
+
+msgctxt "view:condo.payment.group:"
+msgid "Payments"
+msgstr "Recibos"
+
+msgctxt "view:condo.payment.group:"
+msgid "Information"
+msgstr "Información"
+
+msgctxt "view:condo.payment.group:"
+msgid "Generate Fees"
+msgstr "Generar Recibos"
+
+msgctxt "view:condo.payment.pain:"
+msgid "Direct Debit Message"
+msgstr "Mensaje de Presentación de Adeudos Directos SEPA"
+
+msgctxt "view:condo.payment.pain:"
+msgid "Payments Groups"
+msgstr "Facturaciones"
+
+msgctxt "view:condo.payment.pain:"
+msgid "File"
+msgstr "Archivo"
+
+msgctxt "view:condo.payment.pain:"
+msgid "Generate Message"
+msgstr "Generar Archivo"
+
+
+msgctxt "view:condo.payment.sepa.mandate:"
+msgid "Mandate"
+msgstr "Orden Domiciliación"
+
+msgctxt "view:condo.payment.sepa.mandate:"
+msgid "Cancel"
+msgstr "Anular"
+
+msgctxt "view:condo.payment.sepa.mandate:"
+msgid "Are you sure to cancel the mandate?"
+msgstr "Confirma anulación de la orden?"
+
+msgctxt "view:condo.payment.sepa.mandate:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "view:condo.payment.sepa.mandate:"
 msgid "Request"
 msgstr "Solicitado"
 
-msgctxt "view:condo.account.payment.sepa.mandate:"
+msgctxt "view:condo.payment.sepa.mandate:"
 msgid "Validate"
 msgstr "Firmado"
 
-msgctxt "view:condo.account.payment.sepa.mandate:"
+msgctxt "view:condo.payment.sepa.mandate:"
 msgid "Mandates"
 msgstr "Ordenes de Domiciliación"
+
+
+msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_all"
+msgid "All"
+msgstr "Todo"
+
+msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_failed"
+msgid "Failed"
+msgstr "Fallado"
+
+msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_suceeded"
+msgid "Succeeded"
+msgstr "Con éxito"
+
+msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_processing"
+msgid "Processing"
+msgstr "En proceso"
+
+msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_approved"
+msgid "Approved"
+msgstr "Aprobado"
+
+msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_draft"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "model:ir.action,name:act_condopain_form"
+msgid "Direct Debit Messages"
+msgstr "Mensajes de Presentación de Adeudos"
+
+msgctxt "model:ir.action,name:act_condopaymentgroup_form"
+msgid "Payments Group"
+msgstr "Facturaciones"
+
+msgctxt "model:ir.action,name:act_condopayment_form"
+msgid "Payments"
+msgstr "Recibos"
 
 
 msgctxt "model:ir.action,name:act_mandate_form"
@@ -132,6 +410,22 @@ msgctxt "model:ir.ui.menu,name:menu_mandate_form"
 msgid "SEPA Mandates"
 msgstr "Mandatos SEPA"
 
+msgctxt "model:ir.ui.menu,name:menu_condofinancial_form"
+msgid "Invoicing"
+msgstr "Facturaciones"
+
+msgctxt "model:ir.ui.menu,name:menu_payment_form"
+msgid "Payments"
+msgstr "Recibos"
+
+msgctxt "model:ir.ui.menu,name:menu_payment_group_form"
+msgid "Group"
+msgstr "Facturaciones"
+
+msgctxt "model:ir.ui.menu,name:menu_payment_pain_form"
+msgid "SDD Messages"
+msgstr "Mensajes SDD"
+
 msgctxt "model:ir.action,name:report_condo_mandate"
 msgid "Mandate"
 msgstr "Formulario orden domiciliación"
@@ -140,6 +434,18 @@ msgctxt "error:company.company:"
 msgid "This sepa creditor identifier is already in use!"
 msgstr "Esta identificación del acreedor ya existe!"
 
-msgctxt "error:condo.account.payment.sepa.mandate:"
+msgctxt "error:condo.payment.pain:"
+msgid "The reference must be unique for each party!"
+msgstr "La referencia debe ser unica para cada presentador"
+
+msgctxt "error:condo.payment.group:"
+msgid "The reference must be unique for each condominium!"
+msgstr "La referencia debe ser unica para cada comunidad"
+
+msgctxt "error:condo.payment:"
+msgid "Payment \"%s\" must be in draft before deletion."
+msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
+
+msgctxt "error:condo.payment.sepa.mandate:"
 msgid "The identification of the SEPA mandate must be unique in a company."
 msgstr "Este identificador SEPA está en uso en esta comunidad"

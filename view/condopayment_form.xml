@@ -31,10 +31,10 @@ this repository contains the full copyright notices and license terms. -->
         <page string="Mandate" id="mandate">
             <label name="sepa_end_to_end_id"/>
             <field name="sepa_end_to_end_id"/>
-            <label name="debtor_name"/>
-            <field name="debtor_name"/>
-            <label name="sequence_type"/>
-            <field name="sequence_type" xexpand="0"/>
+            <label name="debtor"/>
+            <field name="debtor"/>
+            <label name="type"/>
+            <field name="type" xexpand="0"/>
         </page>
     </notebook>
     <group col="4" colspan="10" id="state_buttons">

@@ -4,6 +4,7 @@ this repository contains the full copyright notices and license terms. -->
 <tree string="Payments">
     <field name="group"/>
     <field name="unit_name"/>
+    <field name="debtor"/>
     <field name="party"/>
     <field name="sepa_mandate"/>
     <field name="amount"/>

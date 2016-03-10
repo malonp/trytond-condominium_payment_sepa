@@ -30,5 +30,5 @@ __metaclass__ = PoolMeta
 
 class BankAccountNumber:
     __name__ = 'bank.account.number'
-    mandates = fields.One2Many('condo.account.payment.sepa.mandate',
+    mandates = fields.One2Many('condo.payment.sepa.mandate',
         'account_number', 'Mandates')

@@ -41,7 +41,7 @@ this repository contains the full copyright notices and license terms. -->
             <!-- FwdgAgt -->
         </GrpHdr>
         <PmtInf py:for="key, payments in pain.sepa_payments">
-            <PmtInfId>${(datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "00001" + key['group'].company.sepa_creditor_identifier)[:35]}</PmtInfId>
+            <PmtInfId>${(key['date'].strftime("%Y%m%d%H%M%S") + key['sequence_type'] + '-' + key['group'].company.sepa_creditor_identifier)[:35]}</PmtInfId>
             <PmtMtd>DD</PmtMtd>
             <BtchBookg>${'true' if key['group'].sepa_batch_booking else 'false'}</BtchBookg>
             <NbOfTxs>${len(payments)}</NbOfTxs>
@@ -61,7 +61,7 @@ this repository contains the full copyright notices and license terms. -->
             </PmtTpInf>
             <ReqdColltnDt>${key['date'].isoformat()}</ReqdColltnDt>
             <Cdtr>
-                ${PartyIdentification(key['group'].company)}
+                ${PartyIdentification(key['group'].company, id=False)}
             </Cdtr>
             <CdtrAcct>
                 ${Account(key['group'].account_number)}
@@ -75,7 +75,16 @@ this repository contains the full copyright notices and license terms. -->
             <!-- ChrgsAcct -->
             <!-- ChrgsAcctAgt -->
             <CdtrSchmeId>
-                ${PartyIdentification(key['group'].company, id=False)}
+              <Id>
+                <PrvtId>
+                  <Othr>
+                    <Id>${key['group'].company.sepa_creditor_identifier}</Id>
+                    <SchmeNm>
+                       <Prtry>SEPA</Prtry>
+                    </SchmeNm>
+                  </Othr>
+                </PrvtId>
+              </Id>
             </CdtrSchmeId>
             <DrctDbtTxInf py:for="payment in payments">
                 <PmtId>
@@ -105,7 +114,7 @@ this repository contains the full copyright notices and license terms. -->
                 </DbtrAgt>
                 <!-- DbtrAgtAcct -->
                 <Dbtr>
-                    ${PartyIdentification(payment, id=False)}
+                    ${PartyIdentification(payment.sepa_mandate, id=False)}
                 </Dbtr>
                 <DbtrAcct>
                     ${Account(payment.sepa_mandate.account_number, currency=False)}

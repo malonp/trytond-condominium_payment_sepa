@@ -39,12 +39,6 @@ class Company:
     creditor_bussines_code = fields.Char('Creditor Bussines Code', size=3,
        help='Code used in the SEPA Creditor Identifier')
     sepa_creditor_identifier = fields.Char('SEPA Creditor Identifier', size=35)
-    sepa_creditor_identifier_used = fields.Function(fields.Char(
-            'SEPA Creditor Identifier Used'),
-        'get_sepa_creditor_identifier_used')
-
-    def get_sepa_creditor_identifier_used(self, name):
-        return self.sepa_creditor_identifier
 
     @classmethod
     def __setup__(cls):

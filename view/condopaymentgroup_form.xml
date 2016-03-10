@@ -29,5 +29,5 @@ this repository contains the full copyright notices and license terms. -->
     </notebook>
 
     <newline/>
-    <button name="generate_message" string="Generate Message" colspan="4"/>
+    <button name="generate_fees" string="Generate Fees" colspan="4"/>
 </form>

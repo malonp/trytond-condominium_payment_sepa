@@ -10,10 +10,10 @@ this repository contains the full copyright notices and license terms. -->
                 ${PostalAddress(address)}
             </PstlAdr>
         </py:with>
-        <Id py:if="id and obj.sepa_creditor_identifier_used">
+        <Id py:if="id and obj.sepa_creditor_identifier">
             <PrvtId>
                 <Othr>
-                    <Id>${obj.sepa_creditor_identifier_used}</Id>
+                    <Id>${obj.sepa_creditor_identifier}</Id>
                     <SchmeNm>
                         <Prtry>SEPA</Prtry>
                     </SchmeNm>

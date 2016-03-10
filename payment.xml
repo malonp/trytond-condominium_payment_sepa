@@ -44,13 +44,13 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.ui.view" id="condopayment_view_form">
-            <field name="model">condo.account.payment</field>
+            <field name="model">condo.payment</field>
             <field name="type">form</field>
             <field name="name">condopayment_form</field>
         </record>
 
         <record model="ir.ui.view" id="mandate_view_form">
-            <field name="model">condo.account.payment.sepa.mandate</field>
+            <field name="model">condo.payment.sepa.mandate</field>
             <field name="type">form</field>
             <field name="name">mandate_form</field>
         </record>
@@ -69,31 +69,31 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
         <record model="ir.ui.view" id="condopayment_view_list">
-            <field name="model">condo.account.payment</field>
+            <field name="model">condo.payment</field>
             <field name="type">tree</field>
             <field name="name">condopayment_list</field>
         </record>
 
         <record model="ir.ui.view" id="mandate_view_list">
-            <field name="model">condo.account.payment.sepa.mandate</field>
+            <field name="model">condo.payment.sepa.mandate</field>
             <field name="type">tree</field>
             <field name="name">mandate_list</field>
         </record>
 
 <!-- Actions -->
         <record model="ir.action.act_window" id="act_condopain_form">
-            <field name="name">Direct Debit Message</field>
+            <field name="name">Direct Debit Messages</field>
             <field name="res_model">condo.payment.pain</field>
         </record>
 
         <record model="ir.action.act_window" id="act_condopaymentgroup_form">
-            <field name="name">Payment Group</field>
+            <field name="name">Payments Group</field>
             <field name="res_model">condo.payment.group</field>
         </record>
 
         <record model="ir.action.act_window" id="act_condopayment_form">
-            <field name="name">Payment</field>
-            <field name="res_model">condo.account.payment</field>
+            <field name="name">Payments</field>
+            <field name="res_model">condo.payment</field>
         </record>
 
         <record model="ir.action.act_window.view"
@@ -148,7 +148,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="ir.action.act_window" id="act_mandate_form">
             <field name="name">SEPA Mandates</field>
-            <field name="res_model">condo.account.payment.sepa.mandate</field>
+            <field name="res_model">condo.payment.sepa.mandate</field>
         </record>
         <record model="ir.action.act_window.view" id="act_mandate_form_view1">
             <field name="sequence" eval="10"/>
@@ -163,13 +163,13 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="ir.action.report" id="report_condo_mandate">
             <field name="name">Mandate</field>
-            <field name="model">condo.account.payment.sepa.mandate</field>
-            <field name="report_name">condo.account.payment.sepa.mandate</field>
+            <field name="model">condo.payment.sepa.mandate</field>
+            <field name="report_name">condo.payment.sepa.mandate</field>
             <field name="report">condominium_payment_sepa/report/mandate.odt</field>
         </record>
         <record model="ir.action.keyword" id="report_condo_mandate_keyword">
             <field name="keyword">form_print</field>
-            <field name="model">condo.account.payment.sepa.mandate,-1</field>
+            <field name="model">condo.payment.sepa.mandate,-1</field>
             <field name="action" ref="report_condo_mandate"/>
         </record>
 
@@ -178,20 +178,20 @@ this repository contains the full copyright notices and license terms. -->
             sequence="40" action="act_mandate_form" 
             id="menu_mandate_form" icon="condo_mandate"/>
 
-        <menuitem name="Financial" parent="condominium.menu_condominium"
+        <menuitem name="Invoicing" parent="condominium.menu_condominium"
             sequence="50" id="menu_condofinancial_form" icon="condo_financial"/>
 
-        <menuitem name="Payment" parent="menu_condofinancial_form"
+        <menuitem name="Payments" parent="menu_condofinancial_form"
             sequence="10" action="act_condopayment_form"
             id="menu_payment_form" icon="condo_payment"/>
 
         <menuitem name="Group" parent="menu_condofinancial_form"
             sequence="20" action="act_condopaymentgroup_form"
-            id="menu_paymentgroup_form" icon="condo_group"/>
+            id="menu_payment_group_form" icon="condo_group"/>
 
         <menuitem name="SDD Messages" parent="menu_condofinancial_form"
             sequence="30" action="act_condopain_form"
-            id="menu_pain_form" icon="condo_pain"/>
+            id="menu_payment_pain_form" icon="condo_pain"/>
 
         <!--record model="ir.rule.group" id="rule_group_mandate">
             <field name="model" search="[('model', '=', 'condo.sepa.mandate')]"/>
