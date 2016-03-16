@@ -690,6 +690,24 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         return self.identification
 
     @classmethod
+    def validate(cls, mandates):
+        super(CondoMandate,cls).validate(mandates)
+        for mandate in mandates:
+            mandate.validate_active()
+
+    def validate_active(self):
+        #Deactivate mandate as unit mandate on canceled state
+        if (self.id > 0) and self.state=='canceled':
+            CondoParty = Pool().get('condo.party')
+            condoparties = CondoParty.search([('sepa_mandate', '=', self.id),('isactive', '=', True),])
+            if len(condoparties):
+                self.raise_user_warning('warn_canceled_mandate',
+                    'This mandate will be canceled as mean of payment in all of his units/apartments!', self.rec_name)
+                for condoparty in condoparties:
+                    condoparty.sepa_mandate = None
+                    condoparty.save()
+
+    @classmethod
     def write(cls, *args):
         actions = iter(args)
         args = []

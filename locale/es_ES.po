@@ -449,3 +449,11 @@ msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "The identification of the SEPA mandate must be unique in a company."
 msgstr "Este identificador SEPA está en uso en esta comunidad"
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "You can not delete mandate \"%s\" because it is not in draft or canceled state."
+msgstr "No puede eliminar la orden \"%s\" porque no es un borrador ni está cancelada."
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "This mandate will be canceled as mean of payment in all of his units/apartments!"
+msgstr "La orden será cancelada como medio de pago en todos los inmuebles!"
