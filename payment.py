@@ -66,7 +66,19 @@ class CondoPain(ModelSQL, ModelView):
             ('pain.008.001.04', 'pain.008.001.04'),
             ], 'Receivable Flavor', required=True,
         translate=False)
-    groups = fields.One2Many('condo.payment.group', 'pain', 'Payments Groups')
+    groups = fields.One2Many('condo.payment.group', 'pain', 'Payments Groups',
+        add_remove=[ 'OR',
+                      [ ('pain', '=', None),
+                        If(Bool(Eval('company')), [ 'OR',
+                                                   ('company', '=', Eval('company')),
+                                                   ('company.parent', 'child_of', Eval('company'))
+                                                  ],
+                                                  []
+                          )
+                      ],
+                      ('pain', '=', Eval('id', -1))
+                   ],
+        depends=['company'])
     message = fields.Text('Message')
 
     @classmethod

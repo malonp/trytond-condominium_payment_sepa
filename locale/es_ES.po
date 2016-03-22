@@ -7,6 +7,9 @@ msgctxt "field:bank.account.number,mandates:"
 msgid "Mandates"
 msgstr "Ordenes de Domiciliación"
 
+msgctxt "field:company.company,sepa_mandates:"
+msgid "SEPA Mandates"
+msgstr "Ordenes de Domiciliación"
 
 msgctxt "field:company.company,groups_payments:"
 msgid "Condominium Payment Group"
@@ -364,6 +367,10 @@ msgctxt "view:condo.payment.sepa.mandate:"
 msgid "Mandates"
 msgstr "Ordenes de Domiciliación"
 
+
+msgctxt "model:ir.action,name:payment_description_list"
+msgid "PaymentGroup Concepts List"
+msgstr "Planilla de Conceptos"
 
 msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_all"
 msgid "All"

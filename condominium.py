@@ -32,8 +32,6 @@ __metaclass__ = PoolMeta
 class CondoParty:
     'Condominium Party'
     __name__ = 'condo.party'
-    company = fields.Function(fields.Many2One('company.company',
-            'Company'), 'on_change_with_company')
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
         depends=['isactive', 'company'],
@@ -42,8 +40,3 @@ class CondoParty:
         ondelete='SET NULL', states={
             'readonly': ~Eval('isactive')
             })
-
-    @fields.depends('unit')
-    def on_change_with_company(self, name=None):
-        if self.unit:
-            return self.unit.company.id

@@ -34,6 +34,8 @@ __all__ = ['Company']
 
 class Company:
     __name__ = 'company.company'
+    sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'company',
+        'SEPA Mandates')
     groups_payments = fields.One2Many('condo.payment.group', 'company', 'Condominium Payment Group',
         readonly=True)
     creditor_bussines_code = fields.Char('Creditor Bussines Code', size=3,

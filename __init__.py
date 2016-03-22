@@ -25,6 +25,7 @@ from .party import *
 from .company import *
 from .condominium import *
 from .bank import *
+from report import *
 
 def register():
     Pool.register(
@@ -39,4 +40,5 @@ def register():
         module='condominium_payment_sepa', type_='model')
     Pool.register(
         CondoMandateReport,
+        PaymentDescriptionList,
         module='condominium_payment_sepa', type_='report')
