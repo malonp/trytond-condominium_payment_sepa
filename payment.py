@@ -22,7 +22,7 @@
 import datetime
 import os
 import unicodedata
-from itertools import groupby
+from itertools import groupby, chain
 
 import unicodecsv
 from cStringIO import StringIO
@@ -45,12 +45,12 @@ __all__ = ['CondoPain', 'CondoPaymentGroup',
            'CondoPayment', 'CondoMandate', 'CondoMandateReport']
 
 
-class CondoPain(ModelSQL, ModelView):
+class CondoPain(Workflow, ModelSQL, ModelView):
     'Condominium Payment Initation Message'
     __name__ = 'condo.payment.pain'
     reference = fields.Char('Reference', required=True,
         states={
-            'readonly': Eval('id', 0) > 0
+            'readonly': Eval('state') != 'draft',
             })
     company = fields.Many2One('company.company', 'Initiating Party',
         domain=[
@@ -58,13 +58,16 @@ class CondoPain(ModelSQL, ModelView):
             ],
         select=True, required=True,
         states={
-            'readonly': Eval('id', 0) > 0
+            'readonly': Eval('state') != 'draft',
             })
     sepa_receivable_flavor = fields.Selection([
             (None, ''),
             ('pain.008.001.02', 'pain.008.001.02'),
             ('pain.008.001.04', 'pain.008.001.04'),
             ], 'Receivable Flavor', required=True,
+        states={
+            'readonly': Eval('state') != 'draft',
+            },
         translate=False)
     groups = fields.One2Many('condo.payment.group', 'pain', 'Payments Groups',
         add_remove=[ 'OR',
@@ -78,20 +81,71 @@ class CondoPain(ModelSQL, ModelView):
                       ],
                       ('pain', '=', Eval('id', -1))
                    ],
+        states={
+            'readonly': Eval('state') != 'draft',
+            },
         depends=['company'])
     message = fields.Text('Message')
+    state = fields.Selection([
+            ('draft', 'Draft'),
+            ('generated', 'Generated'),
+            ('booked', 'Booked'),
+            ('rejected', 'Rejected'),
+            ], 'State', readonly=True, select=True)
+    nboftxs = fields.Function(fields.Integer('Number of Transactions'),
+        'get_nboftxs')
+    ctrlsum = fields.Function(fields.Numeric('Control Sum', digits=(11,2)),
+        'get_ctrlsum')
 
     @classmethod
     def __setup__(cls):
         super(CondoPain, cls).__setup__()
+        cls._error_messages.update({
+                'generate_error': ('Can not generate message "%s" of "%s"'),
+                })
+        cls._transitions |= set((
+                ('draft', 'generated'),
+                ('generated', 'draft'),
+                ('generated', 'booked'),
+                ('generated', 'rejected'),
+                ('booked', 'rejected'),
+                ('rejected', 'draft'),
+                ))
+        cls._buttons.update({
+                'cancel': {
+                    'invisible': ~Eval('state').in_(
+                        ['generated', 'booked']),
+                    },
+                'draft': {
+                    'invisible': ~Eval('state').in_(
+                        ['generated', 'rejected']),
+                    },
+                'generate': {
+                    'invisible': Eval('state') != 'draft',
+                    },
+                'accept': {
+                    'invisible': Eval('state') != 'generated',
+                    },
+                })
         t = cls.__table__()
         cls._sql_constraints += [
             ('reference_unique', Unique(t,t.company, t.reference),
                 'The reference must be unique for each party!'),
         ]
-        cls._buttons.update({
-                'generate_message': {},
-                })
+
+    @staticmethod
+    def default_state():
+        return 'draft'
+
+    def get_nboftxs(self, name):
+        if self.groups:
+            #http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python?rq=1
+            #leaf for tree in forest for leaf in tree
+            return sum(1 for group in self.groups for p in group.payments if p.amount)
+
+    def get_ctrlsum(self, name):
+        if self.groups:
+           return sum(p.amount for group in self.groups for p in group.payments if p.amount)
 
     def sepa_group_payment_key(self, payment):
         key = (('date', payment.date),)
@@ -111,17 +165,88 @@ class CondoPain(ModelSQL, ModelView):
         if self.sepa_receivable_flavor:
             return loader.load('%s.xml' % self.sepa_receivable_flavor)
 
+    @classmethod
+    @ModelView.button
+    @Workflow.transition('draft')
+    def draft(cls, pains):
+        pool = Pool()
+        Payment = pool.get('condo.payment')
+        payment = Payment.__table__()
+        cursor = Transaction().cursor
+
+        pids = [p.id for payments in [group.payments for pain in pains for group in pain.groups] for p in payments]
+        for sub_ids in grouped_slice(pids):
+            red_sql = reduce_ids(payment.id, sub_ids)
+            cursor.execute(*payment.update(
+                    columns=[payment.state],
+                    values=['draft'],
+                    where=red_sql))
+
     @dualmethod
     @ModelView.button
-    def generate_message(cls, pains):
+    @Workflow.transition('generated')
+    def generate(cls, pains):
         pool = Pool()
+        Payment = pool.get('condo.payment')
+        payment = Payment.__table__()
+        cursor = Transaction().cursor
+
         for pain in pains:
-            tmpl = pain.get_sepa_template()
-            message = tmpl.generate(pain=pain,
-                datetime=datetime, normalize=unicodedata.normalize,
-                ).filter(remove_comment).render()
-            pain.message = message
-            pain.save()
+            pids = [p.id for group in pain.groups for p in group.payments]
+            for sub_ids in grouped_slice(pids):
+                red_sql = reduce_ids(payment.id, sub_ids)
+
+                cursor.execute(*payment.update(
+                        columns=[payment.state],
+                        values=['approved'],
+                        where=red_sql))
+            try:
+                tmpl = pain.get_sepa_template()
+                message = tmpl.generate(pain=pain,
+                    datetime=datetime, normalize=unicodedata.normalize,
+                    ).filter(remove_comment).render()
+                pain.message = message
+
+                pain.save()
+            except:
+                cursor.rollback()
+                cls.raise_user_error('generate_error', (pain.reference,pain.company.party.name))
+            else:
+                cursor.commit()
+
+    @classmethod
+    @ModelView.button
+    @Workflow.transition('booked')
+    def accept(cls, pains):
+        pool = Pool()
+        Payment = pool.get('condo.payment')
+        payment = Payment.__table__()
+        cursor = Transaction().cursor
+
+        pids = [p.id for payments in [group.payments for pain in pains for group in pain.groups] for p in payments]
+        for sub_ids in grouped_slice(pids):
+            red_sql = reduce_ids(payment.id, sub_ids)
+            cursor.execute(*payment.update(
+                    columns=[payment.state],
+                    values=['processing'],
+                    where=red_sql))
+
+    @classmethod
+    @ModelView.button
+    @Workflow.transition('rejected')
+    def cancel(cls, pains):
+        pool = Pool()
+        Payment = pool.get('condo.payment')
+        payment = Payment.__table__()
+        cursor = Transaction().cursor
+
+        pids = [p.id for payments in [group.payments for pain in pains for group in pain.groups] for p in payments]
+        for sub_ids in grouped_slice(pids):
+            red_sql = reduce_ids(payment.id, sub_ids)
+            cursor.execute(*payment.update(
+                    columns=[payment.state],
+                    values=['failed'],
+                    where=red_sql))
 
 def remove_comment(stream):
     for kind, data, pos in stream:
@@ -233,6 +358,9 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                 r = unicodecsv.reader(f, delimiter=';', encoding='utf-8')
                 information = map(tuple, r)
 
+            #delete payments of this group with state='draft'
+            CondoPayments.delete([p for p in group.payments if p.state=='draft'])
+
             for condoparty in condoparties:
                 if CondoPayments.search_count([
                                ('group', '=', group),
@@ -240,12 +368,12 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                ('party', '=', condoparty.party)])==0:
                     condopayment = CondoPayments(
                                       group = group,
-                                      company = group.company,
                                       fee = True,
                                       unit = condoparty.unit,
                                       #Set the condoparty as the party
                                       #(instead the debtor of the mandate condoparty.sepa_mandate.party)
                                       party = condoparty.party,
+                                      currency = group.company.currency,
                                       sepa_mandate = condoparty.sepa_mandate,
                                       type = condoparty.sepa_mandate.type,
                                       date = group.date,
@@ -260,8 +388,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                     condopayment.description = concept[2]
 
                     group.payments += (condopayment,)
-            group.save()
-
+        cls.save(groups)
 
 class CondoPayment(Workflow, ModelSQL, ModelView):
     'Condominium Payment'
@@ -271,11 +398,10 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('id', 0) > 0
             })
-    company = fields.Function(fields.Many2One('company.company',
-        'Company', depends=['group'], readonly=True),
-        'get_company')
+    company = fields.Function(fields.Many2One('company.company', 'Company'),
+        getter='get_company', searcher='search_company')
     fee = fields.Boolean('Fee', help="Check if this payment correspond to unit's fee",
-       states={
+        states={
             'readonly': Eval('state') != 'draft',
             },
         depends=['state'])
@@ -288,12 +414,13 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                    )
                ],
         states={
+            'readonly': Eval('state') != 'draft',
             'required': Bool(Eval('fee')),
             'invisible': Not(Bool(Eval('fee')))
             },
         depends=['group', 'fee'])
     unit_name=fields.Function(fields.Char('Unit'),
-        'get_unit_name', searcher='search_unit_name')
+        getter='get_unit_name', searcher='search_unit_name')
     party = fields.Many2One('party.party', 'Ultimate Debtor', required=True,
         domain=[ If(Bool(Eval('fee')),
                        [
@@ -317,15 +444,25 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                        ]
                    )
                ],
+        states={
+            'readonly': Eval('state') != 'draft',
+            },
         depends=['group', 'company', 'fee'])
-    description = fields.Char('Description', size=140)
+    description = fields.Char('Description', size=140,
+        states={
+            'readonly': Eval('state') != 'draft',
+            })
     currency = fields.Many2One('currency.currency', 'Currency',
+        states={
+            'readonly': Eval('state') != 'draft',
+            },
         depends=['group'])
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
         'on_change_with_currency_digits')
     amount = fields.Numeric('Amount',
         digits=(11, Eval('currency_digits', 2)), states={
             'readonly': Eval('state') != 'draft',
+            'required': Eval('state') != 'draft',
             },
         depends=['state', 'currency_digits'])
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
@@ -349,10 +486,12 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                        []
                    )
             ],
+        states={
+            'readonly': Eval('state') != 'draft',
+            },
         depends=['company', 'fee', 'party'])
-    debtor = fields.Function(fields.Char('Debtor',
-        depends=['sepa_mandate'], readonly=True),
-        'get_debtor', searcher='search_debtor_name')
+    debtor = fields.Function(fields.Char('Debtor'),
+        getter='get_debtor', searcher='search_debtor')
     type = fields.Selection([
             ('recurrent', 'RCUR'),
             ('one-off', 'OOFF'),
@@ -390,6 +529,10 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         cls._error_messages.update({
                 'delete_draft': ('Payment "%s" must be in draft before '
                     'deletion.'),
+                'invalid_draft': ('Message "%s" must be in draft to put'
+                    ' payment of "%s" to "%s" in draft too.'),
+                'invalid_succeeded': ('Message "%s" must be booked to put'
+                    ' payment of "%s" to "%s" in succeeded state.'),
                 })
         cls._transitions |= set((
                 ('draft', 'approved'),
@@ -458,61 +601,125 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         elif self.sepa_mandate:
             return self.sepa_mandate.identification
 
-    def get_unit_name(self, name):
-        if self.unit:
-            return self.unit.name
+    @classmethod
+    def get_unit_name(cls, condopayments, name):
+         return dict([ (p.id, p.unit.name) for p in condopayments if p.unit ])
 
     @classmethod
     def search_unit_name(cls, name, domain):
-        table = cls.__table__()
         _, operator, value = domain
         Operator = fields.SQL_OPERATORS[operator]
-        pool = Pool()
 
+        pool = Pool()
         table1 = pool.get('condo.unit').__table__()
-        query1 = table1.select(table1.id,
-            where=Operator(table1.name, value))
+        table2 = cls.__table__()
 
-        query = table.select(table.id,
-            where=(table.unit.in_(query1)))
+        query = table1.join(table2,
+                        condition=table1.id == table2.unit).select(
+                             table2.id,
+                             where=Operator(table1.name, value))
+
         return [('id', 'in', query)]
 
     @classmethod
-    def get_company(cls, payments, name):
-        res = {}
-
-        for payment_ in payments:
-            if payment_.group:
-                res[payment_.id] = payment_.group.company.id
-        return res
+    def order_unit_name(cls, tables):
+        return chain.from_iterable([cls.unit.convert_order('unit', tables, cls),
+                cls.company.convert_order('company', tables, cls)])
 
     @classmethod
-    def get_debtor(cls, payments, name):
-        res = {}
-
-        for payment_ in payments:
-            if payment_.sepa_mandate:
-                res[payment_.id] = payment_.sepa_mandate.party.name
-        return res
+    def get_company(cls, condopayments, name):
+        return dict([ (p.id, p.group.company.id) for p in condopayments if p.group ])
 
     @classmethod
-    def search_debtor_name(cls, name, domain):
-        table = cls.__table__()
+    def search_company(cls, name, domain):
         _, operator, value = domain
         Operator = fields.SQL_OPERATORS[operator]
+
         pool = Pool()
-
         table1 = pool.get('party.party').__table__()
-        query1 = table1.select(table1.id,
-            where=Operator(table1.name, value))
+        table2 = pool.get('company.company').__table__()
+        table3 = pool.get('condo.payment.group').__table__()
+        table4 = cls.__table__()
 
-        table2 = pool.get('condo.payment.sepa.mandate').__table__()
-        query2 = table2.select(table2.id,
-            where=(table2.party.in_(query1)))
+        query = table1.join(table2,
+                        condition=table1.id == table2.party).join(table3,
+                        condition=table2.id == table3.company).join(table4,
+                        condition=table3.id == table4.group).select(
+                             table4.id,
+                             where=Operator(table1.name, value))
 
-        query = table.select(table.id,
-            where=(table.sepa_mandate.in_(query2)))
         return [('id', 'in', query)]
+
+    @staticmethod
+    def order_company(tables):
+        pool = Pool()
+        PaymentGroup = pool.get('condo.payment.group')
+
+        field1 = PaymentGroup._fields['company']
+        table, _ = tables[None]
+        pgroup = PaymentGroup.__table__()
+
+        order_tables1 = tables.get('group')
+        if order_tables1 is None:
+            order_tables1 = {
+                    None: (pgroup, pgroup.id == table.group),
+                    }
+            tables['group'] = order_tables1
+
+        Unit = pool.get('condo.unit')
+        field2 = Unit._fields['name']
+        unit = Unit.__table__()
+
+        order_tables2 = tables.get('unit')
+        if order_tables2 is None:
+            order_tables2 = {
+                    None: (unit, unit.id == table.unit),
+                    }
+            tables['unit'] = order_tables2
+
+        return chain.from_iterable([field1.convert_order('company', order_tables1, PaymentGroup),
+                                    field2.convert_order('name', order_tables2, Unit)])
+
+    @classmethod
+    def get_debtor(cls, condopayments, name):
+        return dict([ (p.id, p.sepa_mandate.party.name) for p in condopayments if p.sepa_mandate ])
+
+    @classmethod
+    def search_debtor(cls, name, domain):
+        _, operator, value = domain
+        Operator = fields.SQL_OPERATORS[operator]
+
+        pool = Pool()
+        table1 = pool.get('party.party').__table__()
+        table2 = pool.get('condo.payment.sepa.mandate').__table__()
+        table3 = cls.__table__()
+
+        #SELECT "c"."id" FROM "party_party" AS "a" INNER JOIN "condo_payment_sepa_mandate" AS "b"
+        #              ON ("a"."id" = "b"."party") INNER JOIN "condo_payment" AS "c"
+        #              ON ("b"."id" = "c"."sepa_mandate") WHERE (UPPER("a"."name") LIKE UPPER(?))
+        query = table1.join(table2,
+                        condition=table1.id == table2.party).join(table3,
+                        condition=table2.id == table3.sepa_mandate).select(
+                             table3.id,
+                             where=Operator(table1.name, value))
+
+        return [('id', 'in', query)]
+
+    @staticmethod
+    def order_debtor(tables):
+        pool = Pool()
+        Mandate = pool.get('condo.payment.sepa.mandate')
+
+        field = Mandate._fields['party']
+        table, _ = tables[None]
+        mandate = Mandate.__table__()
+
+        order_tables = {
+                None: (mandate, mandate.id == table.sepa_mandate),
+                }
+        tables['sepa_mandate'] = order_tables
+
+        return field.convert_order('party', order_tables, Mandate)
 
     @property
     def sequence_type(self):
@@ -536,6 +743,12 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     @ModelView.button
     @Workflow.transition('draft')
     def draft(cls, payments):
+        for payment in payments:
+            if payment.group:
+                if payment.group.pain and payment.group.pain.state!='draft':
+                    cls.raise_user_error('invalid_draft', (payment.group.pain.reference,
+                                                           payment.party.name,
+                                                           payment.company.party.name))
         pass
 
     @classmethod
@@ -544,27 +757,16 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     def approve(cls, payments):
         pass
 
-#    @classmethod
-#    @Workflow.transition('processing')
-#    def process(cls, payments, group):
-#        pool = Pool()
-#        Group = pool.get('condo.payment.group')
-#        if payments:
-#            group = group()
-#            cls.write(payments, {
-#                    'group': group.id,
-#                    })
-#            process_method = getattr(Group,
-#                'process_%s' % group.journal.process_method, None)
-#            if process_method:
-#                process_method(group)
-#                group.save()
-#            return group
-
     @classmethod
     @ModelView.button
     @Workflow.transition('succeeded')
     def succeed(cls, payments):
+        for payment in payments:
+            if payment.group:
+                if payment.group.pain and payment.group.pain.state!='booked':
+                    cls.raise_user_error('invalid_succeeded', (payment.group.pain.reference,
+                                                           payment.party.name,
+                                                           payment.company.party.name))
         pass
 
     @classmethod
@@ -611,7 +813,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         depends=['state', 'party'])
     identification = fields.Char('Identification', size=35,
         states={
-            'readonly': Eval('has_payments', False),
+            'readonly': Bool(Eval('has_payments')) == True,
             'required': Eval('state') == 'validated',
             },
         depends=['state', 'has_payments'])
@@ -646,7 +848,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
             ], 'State', readonly=True)
     payments = fields.One2Many('condo.payment', 'sepa_mandate', 'Payments')
     has_payments = fields.Function(fields.Boolean('Has Payments'),
-        'has_payments')
+        getter='get_has_payments')
 
     @classmethod
     def __setup__(cls):
@@ -702,6 +904,16 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         return self.identification
 
     @classmethod
+    def search_rec_name(cls, name, clause):
+        return [('identification',) + tuple(clause[1:])
+            ]
+
+    @staticmethod
+    def order_company(tables):
+        table, _ = tables[None]
+        return [table.company, table.identification]
+
+    @classmethod
     def validate(cls, mandates):
         super(CondoMandate,cls).validate(mandates)
         for mandate in mandates:
@@ -743,13 +955,14 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         return super(CondoMandate, cls).copy(mandates, default=default)
 
     @classmethod
-    def has_payments(self, mandates, name):
+    def get_has_payments(cls, mandates, name):
         pool = Pool()
         Payment = pool.get('condo.payment')
-        payment = Payment.__table__
+        payment = Payment.__table__()
         cursor = Transaction().cursor
 
         has_payments = dict.fromkeys([m.id for m in mandates], False)
+
         for sub_ids in grouped_slice(mandates):
             red_sql = reduce_ids(payment.sepa_mandate, sub_ids)
             cursor.execute(*payment.select(payment.sepa_mandate, Literal(True),
@@ -757,7 +970,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                     group_by=payment.sepa_mandate))
             has_payments.update(cursor.fetchall())
 
-        return {'has_payments': has_payments}
+        return has_payments
 
     @classmethod
     @ModelView.button

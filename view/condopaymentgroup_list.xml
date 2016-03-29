@@ -5,6 +5,6 @@ this repository contains the full copyright notices and license terms. -->
     <field name="reference"/>
     <field name="company"/>
     <field name="date"/>
-    <field name="nboftxs"/>
-    <field name="ctrlsum"/>
+    <field name="nboftxs" sum="Number of Transactions"/>
+    <field name="ctrlsum" sum="Control Sum"/>
 </tree>

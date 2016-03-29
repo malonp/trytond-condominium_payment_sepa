@@ -22,8 +22,7 @@
 
 from trytond.model import fields
 from trytond.pool import PoolMeta
-from trytond.pyson import Eval
-
+from trytond.pyson import Eval, If, Bool
 
 __all__ = ['CondoParty']
 __metaclass__ = PoolMeta
@@ -35,7 +34,10 @@ class CondoParty:
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
         depends=['isactive', 'company'],
-        domain=[('company', '=', Eval('company')),
+        domain=[If(Bool(Eval('company')),
+                     [
+                         ('company', '=', Eval('company')),
+                     ],[]),
                 ('state', 'not in', ['canceled'])],
         ondelete='SET NULL', states={
             'readonly': ~Eval('isactive')

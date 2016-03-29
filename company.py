@@ -87,3 +87,15 @@ class Company:
                 company.creditor_bussines_code +
                 company.party.vat_code[2:].upper())
             company.save()
+
+    @classmethod
+    def write(cls, *args):
+        actions = iter(args)
+        args = []
+        for companies, values in zip(actions, actions):
+            # Prevent raising false unique constraint
+            if values.get('sepa_creditor_identifier') == '':
+                values = values.copy()
+                values['sepa_creditor_identifier'] = None
+            args.extend((companies, values))
+        super(Company, cls).write(*args)

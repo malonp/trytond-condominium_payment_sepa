@@ -66,6 +66,22 @@ msgctxt "field:condo.payment.pain,groups:"
 msgid "Payments Groups"
 msgstr "Facturaciones"
 
+msgctxt "field:condo.payment.pain,message:"
+msgid "Message"
+msgstr "Fichero"
+
+msgctxt "field:condo.payment.pain,nboftxs:"
+msgid "Number of Transactions"
+msgstr "Núm. Operaciones"
+
+msgctxt "field:condo.payment.pain,ctrlsum:"
+msgid "Control Sum"
+msgstr "Suma de Control"
+
+msgctxt "field:condo.payment.pain,state:"
+msgid "State"
+msgstr "Estado"
+
 
 msgctxt "field:condo.payment.group,reference:"
 msgid "Reference"
@@ -218,6 +234,22 @@ msgid "State"
 msgstr "Situación"
 
 
+msgctxt "selection:condo.payment.pain,state:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "selection:condo.payment.pain,state:"
+msgid "Generated"
+msgstr "Elaborado"
+
+msgctxt "selection:condo.payment.pain,state:"
+msgid "Booked"
+msgstr "Procesado"
+
+msgctxt "selection:condo.payment.pain,state:"
+msgid "Rejected"
+msgstr "Anulado"
+
 msgctxt "selection:condo.payment,state:"
 msgid "Draft"
 msgstr "Borrador"
@@ -266,7 +298,7 @@ msgstr "Anulado"
 
 msgctxt "view:company.company:"
 msgid "Invoicing"
-msgstr "Facturaciones"
+msgstr "Domiciliaciones"
 
 msgctxt "view:company.company:"
 msgid "Creditor Identifier"
@@ -322,6 +354,14 @@ msgctxt "view:condo.payment.group:"
 msgid "Generate Fees"
 msgstr "Generar Recibos"
 
+msgctxt "view:condo.payment.group:"
+msgid "Number of Transactions"
+msgstr "Núm. Operaciones"
+
+msgctxt "view:condo.payment.group:"
+msgid "Control Sum"
+msgstr "Suma de Control"
+
 msgctxt "view:condo.payment.pain:"
 msgid "Direct Debit Message"
 msgstr "Mensaje de Presentación de Adeudos Directos SEPA"
@@ -335,9 +375,24 @@ msgid "File"
 msgstr "Archivo"
 
 msgctxt "view:condo.payment.pain:"
+msgid "Cancel"
+msgstr "Anular"
+
+msgctxt "view:condo.payment.pain:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "view:condo.payment.pain:"
 msgid "Generate Message"
 msgstr "Generar Archivo"
 
+msgctxt "view:condo.payment.pain:"
+msgid "Send to Bank"
+msgstr "Enviar a Banco"
+
+msgctxt "view:condo.payment.pain:"
+msgid "Are you sure to cancel the message?"
+msgstr "Seguro que desea anular el mensaje?"
 
 msgctxt "view:condo.payment.sepa.mandate:"
 msgid "Mandate"
@@ -442,6 +497,10 @@ msgid "This sepa creditor identifier is already in use!"
 msgstr "Esta identificación del acreedor ya existe!"
 
 msgctxt "error:condo.payment.pain:"
+msgid "Can not generate message \"%s\" of \"%s\""
+msgstr "No se puede generar el archivo con la referencia \"%s\" de \"%s\""
+
+msgctxt "error:condo.payment.pain:"
 msgid "The reference must be unique for each party!"
 msgstr "La referencia debe ser unica para cada presentador"
 
@@ -452,6 +511,14 @@ msgstr "La referencia debe ser unica para cada comunidad"
 msgctxt "error:condo.payment:"
 msgid "Payment \"%s\" must be in draft before deletion."
 msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
+
+msgctxt "error:condo.payment:"
+msgid "Message \"%s\" must be in draft to put payment of \"%s\" to \"%s\" in draft too."
+msgstr "El mensaje \"%s\" debe estar en estado borrador para alterar el estado del recibo de \"%s\" a \"%s\""
+
+msgctxt "error:condo.payment:"
+msgid "Message \"%s\" must be booked to put payment of \"%s\" to \"%s\" in succeeded state."
+msgstr "El mensaje \"%s\" debe estar procesado para alterar el estado del recibo de \"%s\" a \"%s\""
 
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "The identification of the SEPA mandate must be unique in a company."
