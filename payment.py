@@ -266,8 +266,9 @@ class CondoPaymentGroup(ModelSQL, ModelView):
     _rec_name = 'reference'
     reference = fields.Char('Reference', required=True,
         states={
-            'readonly': Eval('id', 0) > 0
-            })
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['readonly'])
     company = fields.Many2One('company.company', 'Condominium',
         domain=[
             ('party.active', '=', True),
@@ -286,21 +287,46 @@ class CondoPaymentGroup(ModelSQL, ModelView):
             ('account.active', '=', True),
             ('account.owners.companies', '=', Eval('company')),
             ],
-        depends=['company'], required=True)
-    date = fields.Date('Debit Date', required=True)
-    payments = fields.One2Many('condo.payment', 'group', 'Payments')
-    sepa_batch_booking = fields.Boolean('Batch Booking')
+        states={
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['company', 'readonly'], required=True)
+    date = fields.Date('Debit Date', required=True,
+        states={
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['readonly'])
+    payments = fields.One2Many('condo.payment', 'group', 'Payments',
+        states={
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['readonly'])
+    sepa_batch_booking = fields.Boolean('Batch Booking',
+        states={
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['readonly'])
     sepa_charge_bearer = fields.Selection([
             ('DEBT', 'Debtor'),
             ('CRED', 'Creditor'),
             ('SHAR', 'Shared'),
             ('SLEV', 'Service Level'),
-            ], 'Charge Bearer', required=True)
-    message = fields.Text('Message')
+            ], 'Charge Bearer', required=True,
+        states={
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['readonly'])
+    message = fields.Text('Message',
+        states={
+            'readonly': Bool(Eval('readonly'))
+            },
+        depends=['readonly'])
     nboftxs = fields.Function(fields.Integer('Number of Transactions'),
         'get_nboftxs')
     ctrlsum = fields.Function(fields.Numeric('Control Sum', digits=(11,2)),
         'get_ctrlsum')
+    readonly = fields.Function(fields.Boolean('State'),
+        'get_readonly')
 
     @classmethod
     def __setup__(cls):
@@ -311,14 +337,41 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                 'The reference must be unique for each condominium!'),
         ]
         cls._buttons.update({
-                'generate_fees': {},
+                'generate_fees': {
+                    'invisible': Bool(Eval('readonly'))},
                 })
+
+    @classmethod
+    def validate(cls, paymentgroups):
+        super(CondoPaymentGroup, cls).validate(paymentgroups)
+        for paymentgroup in paymentgroups:
+            paymentgroup.check_today()
+            paymentgroup.check_businessdate()
+
+    def check_today(self):
+        if self.date:
+            pool = Pool()
+            Date = pool.get('ir.date')
+            d = Date.today()
+            user = Transaction().user
+            #Bypass check on populate database by the user admin (id<=1)
+            if self.date<d and user>1:
+                self.raise_user_error(
+                    'Must select date after today!')
+
+    def check_businessdate(self):
+        if self.date and self.date.weekday() in (5,6):
+            self.raise_user_error(
+                "Date must be a business day!")
 
     @staticmethod
     def default_date():
         pool = Pool()
         Date = pool.get('ir.date')
-        return Date.today()
+        d = Date.today()
+        #set tomorrow (or the next business day after tomorrow) as date
+        next = d + datetime.timedelta(days= 7-d.weekday() if d.weekday()>3 else 1)
+        return next
 
     @staticmethod
     def default_sepa_batch_booking():
@@ -338,9 +391,12 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         if self.payments:
             return sum(p.amount for p in self.payments if p.amount)
 
+    def get_readonly(self, name):
+        return self.pain.state!='draft' if self.pain else False
+
     @dualmethod
     @ModelView.button
-    def generate_fees(cls, groups):
+    def generate_fees(cls, groups, _save=True):
         pool = Pool()
 
         CondoParties = pool.get('condo.party')
@@ -388,7 +444,8 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                     condopayment.description = concept[2]
 
                     group.payments += (condopayment,)
-        cls.save(groups)
+        if _save:
+            cls.save(groups)
 
 class CondoPayment(Workflow, ModelSQL, ModelView):
     'Condominium Payment'
@@ -563,6 +620,36 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                     'icon': 'tryton-cancel',
                     },
                 })
+
+    @classmethod
+    def validate(cls, payments):
+        super(CondoPayment, cls).validate(payments)
+        for payment in payments:
+            payment.check_today()
+            payment.check_duedate()
+            payment.check_businessdate()
+
+    def check_today(self):
+        if self.date:
+            pool = Pool()
+            Date = pool.get('ir.date')
+            d = Date.today()
+            user = Transaction().user
+            #Bypass check on populate database by the user admin (id<=1)
+            if self.date<d and user>1:
+                self.raise_user_error(
+                    'Must select date after today!')
+
+    def check_duedate(self):
+        if self.group and self.group.date:
+            if self.date<self.group.date:
+                self.raise_user_error(
+                    "Fee due date must be equal or bigger than his group date")
+
+    def check_businessdate(self):
+        if self.date and self.date.weekday() in (5,6):
+            self.raise_user_error(
+                "Date must be a business day!")
 
     @staticmethod
     def default_fee():

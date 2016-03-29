@@ -86,7 +86,8 @@ class Company:
             company.sepa_creditor_identifier = (company.party.vat_code[:2] + check_sum +
                 company.creditor_bussines_code +
                 company.party.vat_code[2:].upper())
-            company.save()
+        if _save:
+            cls.save(companies)
 
     @classmethod
     def write(cls, *args):

@@ -28,7 +28,7 @@ this repository contains the full copyright notices and license terms. -->
     </py:def>
     <CstmrDrctDbtInitn>
         <GrpHdr>
-            <MsgId>${(datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "ALONS" + pain.company.sepa_creditor_identifier)[:35]}</MsgId>
+            <MsgId>${(datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "ALONS" + pain.company.sepa_creditor_identifier)[-35:]}</MsgId>
             <CreDtTm>${datetime.datetime.now().isoformat()}</CreDtTm>
             <!-- Authstn -->
             <NbOfTxs>${sum(len(payments) for _, payments in pain.sepa_payments)}</NbOfTxs>
@@ -41,7 +41,7 @@ this repository contains the full copyright notices and license terms. -->
             <!-- FwdgAgt -->
         </GrpHdr>
         <PmtInf py:for="key, payments in pain.sepa_payments">
-            <PmtInfId>${(key['date'].strftime("%Y%m%d%H%M%S") + key['sequence_type'] + '-' + key['group'].company.sepa_creditor_identifier)[:35]}</PmtInfId>
+            <PmtInfId>${(key['date'].strftime("%Y%m%d%H%M%S") + key['sequence_type'] + '-' + key['group'].company.sepa_creditor_identifier)[-35:]}</PmtInfId>
             <PmtMtd>DD</PmtMtd>
             <BtchBookg>${'true' if key['group'].sepa_batch_booking else 'false'}</BtchBookg>
             <NbOfTxs>${len(payments)}</NbOfTxs>

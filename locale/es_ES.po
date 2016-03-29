@@ -508,6 +508,14 @@ msgctxt "error:condo.payment.group:"
 msgid "The reference must be unique for each condominium!"
 msgstr "La referencia debe ser unica para cada comunidad"
 
+msgctxt "error:condo.payment.group:"
+msgid "Must select date after today!"
+msgstr "La fecha seleccionada debe ser posterior al dia de hoy!"
+
+msgctxt "error:condo.payment.group:"
+msgid "Date must be a business day!"
+msgstr "La fecha de cargo del recibo debe ser un dia laborable!"
+
 msgctxt "error:condo.payment:"
 msgid "Payment \"%s\" must be in draft before deletion."
 msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
@@ -519,6 +527,18 @@ msgstr "El mensaje \"%s\" debe estar en estado borrador para alterar el estado d
 msgctxt "error:condo.payment:"
 msgid "Message \"%s\" must be booked to put payment of \"%s\" to \"%s\" in succeeded state."
 msgstr "El mensaje \"%s\" debe estar procesado para alterar el estado del recibo de \"%s\" a \"%s\""
+
+msgctxt "error:condo.payment:"
+msgid "Must select date after today!"
+msgstr "La fecha seleccionada debe ser posterior al dia de hoy!"
+
+msgctxt "error:condo.payment:"
+msgid "Fee due date must be equal or bigger than his group date"
+msgstr "La fecha de cargo del recibo debe ser igual o posterior a la de la Comunidad"
+
+msgctxt "error:condo.payment:"
+msgid "Date must be a business day!"
+msgstr "La fecha de cargo del recibo debe ser un dia laborable!"
 
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "The identification of the SEPA mandate must be unique in a company."
