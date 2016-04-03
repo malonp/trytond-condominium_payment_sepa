@@ -20,7 +20,7 @@ this repository contains the full copyright notices and license terms. -->
     <notebook>
         <page string="Payments" id="list">
             <field name="payments" mode="tree,form" colspan="4"
-                view_ids="condominium_payment_sepa.condopayment_view_list,condominium_payment_sepa.condopayment_view_form"/>
+                view_ids="condominium_payment_sepa.condopayment_view_list_without_company,condominium_payment_sepa.condopayment_view_form"/>
         </page>
         <page string="Information" id="csv">
             <field name="message" widget="binary" filename="filename"/>
