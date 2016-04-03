@@ -31,6 +31,7 @@ from decimal import Decimal
 import genshi
 import genshi.template
 from sql import Literal
+from sql.aggregate import Count
 
 from trytond.pool import Pool
 from trytond.model import ModelSQL, ModelView, Workflow, fields, dualmethod, Unique
@@ -51,7 +52,8 @@ class CondoPain(Workflow, ModelSQL, ModelView):
     reference = fields.Char('Reference', required=True,
         states={
             'readonly': Eval('state') != 'draft',
-            })
+            },
+        depends=['state'])
     company = fields.Many2One('company.company', 'Initiating Party',
         domain=[
             ('party.active', '=', True),
@@ -59,7 +61,8 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         select=True, required=True,
         states={
             'readonly': Eval('state') != 'draft',
-            })
+            },
+        depends=['state'])
     sepa_receivable_flavor = fields.Selection([
             (None, ''),
             ('pain.008.001.02', 'pain.008.001.02'),
@@ -68,6 +71,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
+        depends=['state'],
         translate=False)
     groups = fields.One2Many('condo.payment.group', 'pain', 'Payments Groups',
         add_remove=[ 'OR',
@@ -84,8 +88,12 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
-        depends=['company'])
-    message = fields.Text('Message')
+        depends=['company', 'state'])
+    message = fields.Text('Message',
+        states={
+            'readonly': Eval('state') != 'draft',
+            },
+        depends=['state'])
     state = fields.Selection([
             ('draft', 'Draft'),
             ('generated', 'Generated'),
@@ -296,11 +304,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
             'readonly': Bool(Eval('readonly'))
             },
         depends=['readonly'])
-    payments = fields.One2Many('condo.payment', 'group', 'Payments',
-        states={
-            'readonly': Bool(Eval('readonly'))
-            },
-        depends=['readonly'])
+    payments = fields.One2Many('condo.payment', 'group', 'Payments')
     sepa_batch_booking = fields.Boolean('Batch Booking',
         states={
             'readonly': Bool(Eval('readonly'))
@@ -326,7 +330,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
     ctrlsum = fields.Function(fields.Numeric('Control Sum', digits=(11,2)),
         'get_ctrlsum')
     readonly = fields.Function(fields.Boolean('State'),
-        'get_readonly')
+        getter='get_readonly', searcher='search_readonly')
 
     @classmethod
     def __setup__(cls):
@@ -336,6 +340,12 @@ class CondoPaymentGroup(ModelSQL, ModelView):
             ('reference_unique', Unique(t,t.company, t.reference),
                 'The reference must be unique for each condominium!'),
         ]
+        cls._error_messages.update({
+                'readonly_paymentgroup': ('PaymentGroup "%s" is in readonly state'
+                    ),
+                'payments_approved': ('PaymentGroup "%s" has payments approved'
+                    ' with earlier date.'),
+                })
         cls._buttons.update({
                 'generate_fees': {
                     'invisible': Bool(Eval('readonly'))},
@@ -344,18 +354,57 @@ class CondoPaymentGroup(ModelSQL, ModelView):
     @classmethod
     def validate(cls, paymentgroups):
         super(CondoPaymentGroup, cls).validate(paymentgroups)
+
+        table = cls.__table__()
+        payments = Pool().get('condo.payment').__table__()
+
         for paymentgroup in paymentgroups:
+            if paymentgroup.readonly:
+                with Transaction().new_cursor(readonly=True):
+                    cursor = Transaction().cursor
+                    cursor.execute(*table.select(table.date,
+                                 where=(table.id == paymentgroup.id) &
+                                       (table.date != paymentgroup.date)))
+                    if cursor.fetchone():
+                        cls.raise_user_error('readonly_paymentgroup', (paymentgroup.reference)
+                            )
+                return
+
+            cursor = Transaction().cursor
+            cursor.execute(*payments.select(payments.id,
+                         where=(payments.group == paymentgroup.id) &
+                               (payments.date < paymentgroup.date) &
+                               (payments.state != 'draft')))
+            if cursor.fetchall():
+                cls.raise_user_error('payments_approved', (paymentgroup.reference)
+                    )
+
             paymentgroup.check_today()
             paymentgroup.check_businessdate()
+
+            #if has drafted payments with due date before new date
+            #update date field of payments
+            cursor.execute(*payments.select(payments.id,
+                         where=(payments.group == paymentgroup.id) &
+                               (payments.date < paymentgroup.date) &
+                               (payments.state == 'draft')))
+            ids_draft = [ids for (ids,) in cursor.fetchall()]
+
+            if len(ids_draft):
+                for sub_ids in grouped_slice(ids_draft):
+                    red_sql = reduce_ids(payments.id, sub_ids)
+                    # Use SQL to prevent double validate loop
+                    cursor.execute(*payments.update(
+                            columns=[payments.date],
+                            values=[paymentgroup.date],
+                            where=red_sql))
 
     def check_today(self):
         if self.date:
             pool = Pool()
             Date = pool.get('ir.date')
             d = Date.today()
-            user = Transaction().user
-            #Bypass check on populate database by the user admin (id<=1)
-            if self.date<d and user>1:
+            if self.date<d:
                 self.raise_user_error(
                     'Must select date after today!')
 
@@ -393,6 +442,28 @@ class CondoPaymentGroup(ModelSQL, ModelView):
 
     def get_readonly(self, name):
         return self.pain.state!='draft' if self.pain else False
+
+    @classmethod
+    def search_readonly(cls, name, domain):
+        _, operator, value = domain
+        pool = Pool()
+        table1 = pool.get('condo.payment.pain').__table__()
+        table2 = cls.__table__()
+
+        if (operator=='=' and not value) or (operator=='!=' and value):
+            query1 = table1.join(table2,
+                            condition=table1.id == table2.pain).select(
+                                 table2.id,
+                                 where=table1.state == 'draft')
+            query2 = table2.select(table2.id,
+                                 where=table2.pain == None)
+            return [ 'OR', ('id', 'in', query1), ('id', 'in', query2)]
+        else:
+            query = table1.join(table2,
+                            condition=table1.id == table2.pain).select(
+                                 table2.id,
+                                 where=table1.state != 'draft')
+            return [('id', 'in', query)]
 
     @dualmethod
     @ModelView.button
@@ -452,6 +523,9 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     __name__ = 'condo.payment'
     group = fields.Many2One('condo.payment.group', 'Group',
         ondelete='RESTRICT', required=True,
+        domain=[
+                 ('readonly', '=', False),
+               ],
         states={
             'readonly': Eval('id', 0) > 0
             })
@@ -586,6 +660,8 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         cls._error_messages.update({
                 'delete_draft': ('Payment "%s" must be in draft before '
                     'deletion.'),
+                'readonly_payment': ('Payment of "%s"'
+                    ' is not in draft state.'),
                 'invalid_draft': ('Message "%s" must be in draft to put'
                     ' payment of "%s" to "%s" in draft too.'),
                 'invalid_succeeded': ('Message "%s" must be booked to put'
@@ -624,21 +700,22 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     @classmethod
     def validate(cls, payments):
         super(CondoPayment, cls).validate(payments)
+
+        table = cls.__table__()
+
         for payment in payments:
-            payment.check_today()
+            if payment.state!='draft':
+                with Transaction().new_cursor(readonly=True):
+                    cursor = Transaction().cursor
+                    cursor.execute(*table.select(table.id,
+                                 where=(table.id == payment.id) &
+                                       (table.date != payment.date)))
+                    if cursor.fetchone():
+                        cls.raise_user_error('readonly_payment', (payment.party.name)
+                            )
+                return
             payment.check_duedate()
             payment.check_businessdate()
-
-    def check_today(self):
-        if self.date:
-            pool = Pool()
-            Date = pool.get('ir.date')
-            d = Date.today()
-            user = Transaction().user
-            #Bypass check on populate database by the user admin (id<=1)
-            if self.date<d and user>1:
-                self.raise_user_error(
-                    'Must select date after today!')
 
     def check_duedate(self):
         if self.group and self.group.date:
