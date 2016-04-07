@@ -358,6 +358,11 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         table = cls.__table__()
         payments = Pool().get('condo.payment').__table__()
 
+#TODO (remove hack)
+        user = Transaction().user
+        if user==1:
+            return
+
         for paymentgroup in paymentgroups:
             if paymentgroup.readonly:
                 with Transaction().new_cursor(readonly=True):
@@ -449,6 +454,11 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         pool = Pool()
         table1 = pool.get('condo.payment.pain').__table__()
         table2 = cls.__table__()
+
+#TODO (remove hack)
+        user = Transaction().user
+        if user<=1:
+            return []
 
         if (operator=='=' and not value) or (operator=='!=' and value):
             query1 = table1.join(table2,

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<data>
+    <xpath expr="/form/notebook" position="inside">
+        <page string="Payments" id="units_payments">
+            <field name="payments" mode="tree,form" colspan="4"
+                view_ids="condominium_payment_sepa.condopayment_view_list_without_company_and_unit,condominium_payment_sepa.condopayment_view_form"/>
+        </page>
+    </xpath>
+</data>

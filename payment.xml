@@ -80,6 +80,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">condopayment_list_without_company</field>
         </record>
 
+        <record model="ir.ui.view" id="condopayment_view_list_without_company_and_unit">
+            <field name="model">condo.payment</field>
+            <field name="type">tree</field>
+            <field name="name">condopayment_list_without_company_and_unit</field>
+        </record>
+
         <record model="ir.ui.view" id="mandate_view_list">
             <field name="model">condo.payment.sepa.mandate</field>
             <field name="type">tree</field>

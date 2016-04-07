@@ -24,7 +24,7 @@ from trytond.model import fields
 from trytond.pool import PoolMeta
 from trytond.pyson import Eval, If, Bool
 
-__all__ = ['CondoParty']
+__all__ = ['CondoParty', 'Unit']
 __metaclass__ = PoolMeta
 
 
@@ -42,3 +42,8 @@ class CondoParty:
         ondelete='SET NULL', states={
             'readonly': ~Eval('isactive')
             })
+
+class Unit:
+    'Unit'
+    __name__ = 'condo.unit'
+    payments = fields.One2Many( 'condo.payment', 'unit', 'Payments')

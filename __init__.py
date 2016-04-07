@@ -37,6 +37,7 @@ def register():
         CondoPayment,
         BankAccountNumber,
         Party,
+        Unit,
         module='condominium_payment_sepa', type_='model')
     Pool.register(
         CondoMandateReport,

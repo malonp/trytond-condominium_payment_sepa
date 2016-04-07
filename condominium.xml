@@ -11,6 +11,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">condoparty_form</field>
         </record>
 
+        <record model="ir.ui.view" id="unit_view_form">
+            <field name="model">condo.unit</field>
+            <field name="inherit" ref="condominium.unit_view_form"/>
+            <field name="name">unit_form</field>
+        </record>
+
 <!-- Inherit List View -->
         <record model="ir.ui.view" id="condoparty_view_tree">
             <field name="model">condo.party</field>
@@ -21,7 +27,7 @@ this repository contains the full copyright notices and license terms. -->
         <record model="ir.ui.view" id="condoparty_view_tree_sequence">
             <field name="model">condo.party</field>
             <field name="inherit" ref="condominium.condoparty_view_tree_sequence"/>
-            <field name="name">condoparty_tree_sequence</field>
+            <field name="name">condoparty_tree</field>
         </record>
 
 <!-- Actions -->

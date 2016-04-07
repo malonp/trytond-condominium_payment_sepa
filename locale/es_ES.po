@@ -28,10 +28,6 @@ msgid "Code used in the SEPA Creditor Identifier"
 msgstr "Código utilizado en la obtención del identificador del acreedor (AT-02)"
 
 
-msgctxt "field:condo.party,company:"
-msgid "Company"
-msgstr "Com. de Propietarios"
-
 msgctxt "field:condo.party,sepa_mandate:"
 msgid "Mandate"
 msgstr "Orden de Domiliación"
@@ -39,6 +35,10 @@ msgstr "Orden de Domiliación"
 msgctxt "help:condo.party,sepa_mandate:"
 msgid "SEPA Mandate of this party for the unit"
 msgstr "Orden de domiciliación de este tercero para recibos del inmueble"
+
+msgctxt "field:condo.unit,payments:"
+msgid "Payments"
+msgstr "Recibos"
 
 
 msgctxt "field:party.party,companies:"
@@ -309,6 +309,11 @@ msgid "Calculate"
 msgstr "Calcular"
 
 
+msgctxt "view:condo.unit:"
+msgid "Payments"
+msgstr "Recibos"
+
+
 msgctxt "view:condo.payment:"
 msgid "Payments"
 msgstr "Recibos"
@@ -336,6 +341,10 @@ msgstr "Fallado"
 msgctxt "view:condo.payment:"
 msgid "Succeed"
 msgstr "Con éxito"
+
+msgctxt "view:condo.payment:"
+msgid "Sum"
+msgstr "Suma"
 
 
 msgctxt "view:condo.payment.group:"
