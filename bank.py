@@ -21,11 +21,60 @@
 
 
 from trytond.model import fields
-from trytond.pool import PoolMeta
+from trytond.pool import Pool, PoolMeta
+from trytond.tools import reduce_ids, grouped_slice
+from trytond.transaction import Transaction
 
-
-__all__ = ['BankAccountNumber']
+__all__ = ['BankAccount', 'BankAccountNumber']
 __metaclass__ = PoolMeta
+
+
+class BankAccount:
+    'Bank Account'
+    __name__ = 'bank.account'
+
+    @classmethod
+    def validate(cls, bankaccounts):
+        super(BankAccount, cls).validate(bankaccounts)
+        for bankaccount in bankaccounts:
+            bankaccount.validate_active()
+
+    def validate_active(self):
+        #Cancel mandates with account number of this bank account.
+        if (self.id > 0) and not self.active:
+            mandates = Pool().get('condo.payment.sepa.mandate').__table__()
+            condoparties = Pool().get('condo.party').__table__()
+            cursor = Transaction().cursor
+
+            red_sql = reduce_ids(mandates.account_number, [x.id for x in self.numbers])
+            cursor.execute(*mandates.select(mandates.id,
+                                            mandates.identification,
+                                        where=red_sql &
+                                              (mandates.state != 'canceled')))
+
+            for id, identification in cursor.fetchall():
+                cursor.execute(*condoparties.select(
+                                     condoparties.id,
+                                     where=(condoparties.sepa_mandate == id) &
+                                           (condoparties.isactive == True)))
+
+                ids = [ids for (ids,) in cursor.fetchall()]
+                if len(ids):
+                    self.raise_user_warning('warn_deactive_mandate.%d' % id,
+                        'Mandate "%s" will be canceled and deactivate as mean of payment in %d unit(s)/apartment(s)!', (identification, len(ids)))
+
+                    # Use SQL to prevent double validate loop
+                    cursor.execute(*mandates.update(
+                            columns=[mandates.state],
+                            values=['canceled'],
+                            where=(mandates.id == id)))
+
+                    for sub_ids in grouped_slice(ids):
+                        red_sql = reduce_ids(condoparties.id, sub_ids)
+                        cursor.execute(*condoparties.update(
+                                columns=[condoparties.sepa_mandate],
+                                values=[None],
+                                where=red_sql))
 
 
 class BankAccountNumber:

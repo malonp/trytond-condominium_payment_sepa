@@ -46,6 +46,10 @@ class Company:
     def __setup__(cls):
         super(Company, cls).__setup__()
         t = cls.__table__()
+        cls._error_messages.update({
+                'invalid_creditor_identifier': ('SEPA Creditor Identifier "%s" of "%s" is not valid'),
+                'without_creditor_identifier': ('Company "%s" has not VAT Code defined'),
+                })
         cls._sql_constraints += [
             ('condo_credid_uniq', Unique(t,t.sepa_creditor_identifier),
                 'This sepa creditor identifier is already in use!'),
@@ -78,7 +82,9 @@ class Company:
     def calculate_sepa_creditor_identifier(cls, companies, _save=True):
         for company in companies:
             if not company.party.vat_code:
-                continue
+                cls.raise_user_error('without_creditor_identifier',
+                    (company.party.name))
+
             number = _to_base10(company.party.vat_code[:2] + '00' +
                 company.creditor_bussines_code +
                 company.party.vat_code[2:].upper())

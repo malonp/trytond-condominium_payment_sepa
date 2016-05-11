@@ -21,8 +21,10 @@
 
 
 from trytond.model import fields
-from trytond.pool import PoolMeta
+from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, If, Bool
+from trytond.transaction import Transaction
+
 
 __all__ = ['CondoParty', 'Unit']
 __metaclass__ = PoolMeta
@@ -38,10 +40,38 @@ class CondoParty:
                      [
                          ('company', '=', Eval('company')),
                      ],[]),
-                ('state', 'not in', ['canceled'])],
+                If(Bool(Eval('isactive')),
+                     [
+                         ('state', 'not in', ['canceled'])
+                     ],[]),
+               ],
         ondelete='SET NULL', states={
             'readonly': ~Eval('isactive')
             })
+
+    @classmethod
+    def validate(cls, condoparties):
+        super(CondoParty, cls).validate(condoparties)
+        for condoparty in condoparties:
+            condoparty.unique_role_and_has_mandate()
+
+    def unique_role_and_has_mandate(self):
+        if self.sepa_mandate and self.isactive:
+            condoparties = Pool().get('condo.party').__table__()
+            cursor = Transaction().cursor
+
+            cursor.execute(*condoparties.select(
+                                 condoparties.id,
+                                 where=(condoparties.unit == self.unit.id) &
+                                       (condoparties.role == self.role) &
+                                       (condoparties.isactive == True) &
+                                       (condoparties.sepa_mandate != None)))
+
+            ids = [ids for (ids,) in cursor.fetchall()]
+            if len(ids)>1:
+                self.raise_user_error(
+                    "Cant be two or more parties with mandates and the same role!")
+
 
 class Unit:
     'Unit'

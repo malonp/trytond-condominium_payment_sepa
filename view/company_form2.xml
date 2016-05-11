@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<data>
+    <xpath expr="/form/notebook" position="inside">
+        <page string="Invoicing" id="condo_invoicing">
+            <separator string="Creditor Identifier" colspan="4" id="sepa"/>
+
+            <group colspan="2" col="6" id="codes">
+                <label name="creditor_bussines_code"/>
+                <field name="creditor_bussines_code"/>
+
+                <label name="sepa_creditor_identifier"/>
+                <field name="sepa_creditor_identifier"/>
+
+                <button name="calculate_sepa_creditor_identifier" string="Calculate"/>
+            </group>
+
+        </page>
+    </xpath>
+</data>

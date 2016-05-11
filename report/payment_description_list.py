@@ -19,9 +19,11 @@
 #
 ##############################################################################
 
+from sql import Desc, Asc
+
 from trytond.pool import Pool
 from trytond.report import Report
-
+from trytond.transaction import Transaction
 
 __all__ = ['PaymentDescriptionList']
 
@@ -34,32 +36,49 @@ class PaymentDescriptionList(Report):
         report_context = super(PaymentDescriptionList, cls).get_context(records, data)
 
         pool = Pool()
-        CondoParty = pool.get('condo.party')
-        CondoUnit = pool.get('condo.unit')
+        cursor = Transaction().cursor
 
-        units = CondoUnit.search_read([
-                    'OR', [
-                            ('company', 'in', [x.company.id for x in records]),
-                        ],[
-                            ('company.parent', 'child_of', [x.company.id for x in records]),
-                        ],
-                ], fields_names=['id'])
+        Company = pool.get('company.company')
 
-        condoparties = CondoParty.search([
-                ('unit', 'in', [ x['id'] for x in units ]),
-                ('sepa_mandate', '!=', None),
-                ('isactive', '=', True),
-                ], order=[('unit.company', 'ASC'), ('unit.name', 'ASC')])
+        table1 = pool.get('condo.party').__table__()
+        table2 = pool.get('condo.unit').__table__()
 
-        report = []
+        preport = []
 
-        for condoparty in condoparties:
-            item = {
-                'name': condoparty.unit_name,
-                'role': condoparty.role
-                }
-            report.append(item)
+        for r in records:
+            companies = Company.search_read([
+                        'OR', [
+                                ('id', '=', r.company.id),
+                            ],[
+                                ('parent', 'child_of', r.company.id),
+                            ],
+                    ], order=[('party.name', 'ASC')],
+                    fields_names=['id', 'party.name'])
 
-        report_context['records'] = report
+            report = []
+
+            for c in companies:
+                cursor.execute(*table1.join(table2,
+                                    condition=table1.unit == table2.id).select(
+                                        table2.name, table1.role,
+                                        where=((table1.sepa_mandate != None) &
+                                              (table1.isactive == True) &
+                                              (table2.company == c['id'])),
+                                        order_by=(Asc(table2.name), Asc(table1.role))))
+                item = {
+                    'company':   c['party.name'],
+                    'units':     cursor.dictfetchall()
+                    }
+                if len(item['units']):
+                    report.append(item)
+
+            if len(report):
+                item = {
+                    'reference': r.reference,
+                    'condo': report
+                    }
+                preport.append(item)
+
+        report_context['pgroups'] = preport
 
         return report_context
