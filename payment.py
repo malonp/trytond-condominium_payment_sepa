@@ -595,14 +595,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                        [
 #Subcondominium of the condominium with a mandate on his own name
                            ('sepa_mandates.state', 'not in', ['draft', 'canceled']),
-                           If(Bool(Eval('company')),
-                               [
-                                   ('sepa_mandates.company', '=', Eval('company')),
-                                   ('companies.parent', 'child_of', [Eval('company')]),
-                                   ('companies', '!=', Eval('company'))
-                               ],
-                               []
-                           )
+                           ('sepa_mandates.company', '=', Eval('company')),
                        ]
                    )
                  ])
@@ -810,7 +803,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def get_unit_name(cls, condopayments, name):
-         return dict([ (p.id, p.unit.name) for p in condopayments if p.unit ])
+        return dict([ (p.id, p.unit.name if p.unit else None) for p in condopayments ])
 
     @classmethod
     def search_unit_name(cls, name, domain):
@@ -835,7 +828,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def get_company(cls, condopayments, name):
-        return dict([ (p.id, p.group.company.id) for p in condopayments if p.group ])
+        return dict([ (p.id, p.group.company.id if p.group else None) for p in condopayments ])
 
     @classmethod
     def search_company(cls, name, domain):
@@ -889,7 +882,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def get_debtor(cls, condopayments, name):
-        return dict([ (p.id, p.sepa_mandate.party.name) for p in condopayments if p.sepa_mandate ])
+        return dict([ (p.id, p.sepa_mandate.party.name if p.sepa_mandate else None) for p in condopayments ])
 
     @classmethod
     def search_debtor(cls, name, domain):
@@ -952,11 +945,11 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     def draft(cls, payments):
         for payment in payments:
             if payment.group:
-                if payment.group.pain and payment.group.pain.state!='draft':
-                    cls.raise_user_error('invalid_draft', (payment.group.pain.reference,
-                                                           payment.party.name,
-                                                           payment.company.party.name))
-        pass
+                if payment.group.pain and payment.group.pain.state=='draft':
+                    continue
+            cls.raise_user_error('invalid_draft', (payment.group.pain.reference,
+                                                   payment.party.name,
+                                                   payment.company.party.name))
 
     @classmethod
     @ModelView.button
@@ -970,11 +963,11 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     def succeed(cls, payments):
         for payment in payments:
             if payment.group:
-                if payment.group.pain and payment.group.pain.state!='booked':
-                    cls.raise_user_error('invalid_succeeded', (payment.group.pain.reference,
-                                                           payment.party.name,
-                                                           payment.company.party.name))
-        pass
+                if payment.group.pain and payment.group.pain.state=='booked':
+                    continue
+            cls.raise_user_error('invalid_succeeded', (payment.group.pain.reference,
+                                                       payment.party.name,
+                                                       payment.company.party.name))
 
     @classmethod
     @ModelView.button
