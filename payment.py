@@ -1092,7 +1092,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
             ]
         cls._error_messages.update({
                 'delete_draft_canceled': ('You can not delete mandate "%s" '
-                    'because it is not in draft or canceled state.'),
+                    'because it is not in draft or canceled state or has payments.'),
                 })
         cls._history = True
 
@@ -1219,8 +1219,10 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
     @classmethod
     def delete(cls, mandates):
         for mandate in mandates:
-            if mandate.state not in ('draft', 'canceled'):
-                cls.raise_user_error('delete_draft_canceled', mandate.rec_name)
+            if ((mandate.state == 'draft')
+               or (mandate.state == 'canceled' and not mandate.has_payments)):
+                   continue
+            cls.raise_user_error('delete_draft_canceled', mandate.rec_name)
         super(CondoMandate, cls).delete(mandates)
 
 

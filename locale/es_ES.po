@@ -431,6 +431,10 @@ msgctxt "view:condo.payment.sepa.mandate:"
 msgid "Mandates"
 msgstr "Ordenes de Domiciliación"
 
+msgctxt "view:party.party:"
+msgid "Mandates"
+msgstr "Domiciliaciones"
+
 
 msgctxt "model:ir.action,name:payment_description_list"
 msgid "PaymentGroup Concepts List"
@@ -590,8 +594,8 @@ msgid "The identification of the SEPA mandate must be unique in a company."
 msgstr "Este identificador SEPA está en uso en esta comunidad"
 
 msgctxt "error:condo.payment.sepa.mandate:"
-msgid "You can not delete mandate \"%s\" because it is not in draft or canceled state."
-msgstr "No puede eliminar la orden \"%s\" porque no es un borrador ni está cancelada."
+msgid "You can not delete mandate \"%s\" because it is not in draft or canceled state or has payments."
+msgstr "No puede eliminar la orden \"%s\" porque no es un borrador ni está cancelada o tiene recibos."
 
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "Mandate \"%s\" will be canceled as mean of payment in %d unit(s)/apartment(s)!"

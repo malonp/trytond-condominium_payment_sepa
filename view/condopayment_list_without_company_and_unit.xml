@@ -6,4 +6,6 @@ this repository contains the full copyright notices and license terms. -->
     <field name="state"/>
     <field name="amount" sum="Sum"/>
     <field name="description"/>
+    <field name="debtor"/>
+    <field name="party"/>
 </tree>
