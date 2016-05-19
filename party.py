@@ -20,8 +20,11 @@
 ##############################################################################
 
 
-from trytond.pool import PoolMeta
 from trytond.model import fields
+from trytond.pool import Pool, PoolMeta
+from trytond.tools import reduce_ids, grouped_slice
+from trytond.transaction import Transaction
+
 
 __metaclass__ = PoolMeta
 __all__ = ['Party']
@@ -32,3 +35,32 @@ class Party:
     companies = fields.One2Many('company.company', 'party', 'Companies')
     sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'party',
         'SEPA Mandates')
+
+    @classmethod
+    def validate(cls, parties):
+        super(Party, cls).validate(parties)
+        for party in parties:
+            party.validate_mandates()
+
+    def validate_mandates(self):
+        #Cancel party's mandates on party deactivate
+        if (self.id > 0) and not self.active:
+            mandates = Pool().get('condo.payment.sepa.mandate').__table__()
+            cursor = Transaction().cursor
+
+            cursor.execute(*mandates.select(mandates.id,
+                                        where=(mandates.party == self.id) &
+                                              (mandates.state != 'canceled')))
+
+            ids = [ids for (ids,) in cursor.fetchall()]
+            if len(ids):
+                self.raise_user_warning('warn_cancel_mandates_of_party.%d' % self.id,
+                    '%d mandate(s) of this party will be canceled!', len(ids))
+
+                for sub_ids in grouped_slice(ids):
+                    red_sql = reduce_ids(mandates.id, sub_ids)
+                    # Use SQL to prevent double validate loop
+                    cursor.execute(*mandates.update(
+                            columns=[mandates.state],
+                            values=['canceled'],
+                            where=red_sql))

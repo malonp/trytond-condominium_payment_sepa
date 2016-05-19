@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import csv
 import numbers
+import sys
 
 from itertools import izip
+
+#http://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
+csv.field_size_limit(sys.maxsize)
 
 pass_throughs = [
     'register_dialect',

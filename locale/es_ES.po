@@ -600,3 +600,7 @@ msgstr "No puede eliminar la orden \"%s\" porque no es un borrador ni está canc
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "Mandate \"%s\" will be canceled as mean of payment in %d unit(s)/apartment(s)!"
 msgstr "La domiciliacion \"%s\" será cancelada como medio de pago en %d inmueble(s)!"
+
+msgctxt "error:party.party:"
+msgid "%d mandate(s) of this party will be canceled!"
+msgstr "%d domiciliacion(es) serán anuladas!"
