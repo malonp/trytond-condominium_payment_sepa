@@ -31,7 +31,7 @@ from decimal import Decimal
 import genshi
 import genshi.template
 from sql import Literal
-from sql.aggregate import Count
+from sql.aggregate import Count, Max
 
 from trytond.pool import Pool
 from trytond.model import ModelSQL, ModelView, Workflow, fields, dualmethod, Unique
@@ -612,7 +612,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                      condition=accountparties.owner == parties.id).join(
                                      companies,
                                      condition=parties.id == companies.party).select(
-                                     banknumbers.id, banknumbers.number_compact, companies.id,
+                                     Max(banknumbers.id), Max(banknumbers.number_compact), companies.id,
                                      where=((banknumbers.type == 'iban') &
                                             (bankaccounts.active == True) &
                                             (parties.active == True) &
