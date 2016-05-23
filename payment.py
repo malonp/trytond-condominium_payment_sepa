@@ -691,7 +691,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 #This party is owner or tenant of the unit and have a mandate for it (on his own name or not)
                            ('units.sepa_mandate.company', If(Bool(Eval('company')), '=', '!='), Eval('company')),
                            ('units.sepa_mandate.state', 'not in', ['draft', 'canceled']),
-                           ('units.isactive', '=', True),
+                           ('units.active', '=', True),
                            ('units.unit', If(Bool(Eval('unit')), '=', '!='), Eval('unit'))
                        ],
                        [
@@ -1237,7 +1237,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
 
             cursor.execute(*condoparties.select(condoparties.id,
                                         where=(condoparties.sepa_mandate == self.id) &
-                                              (condoparties.isactive == True)))
+                                              (condoparties.active == True)))
 
             ids = [ids for (ids,) in cursor.fetchall()]
             if len(ids):

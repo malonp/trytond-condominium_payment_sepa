@@ -35,18 +35,18 @@ class CondoParty:
     __name__ = 'condo.party'
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
-        depends=['isactive', 'company'],
+        depends=['active', 'company'],
         domain=[If(Bool(Eval('company')),
                      [
                          ('company', '=', Eval('company')),
                      ],[]),
-                If(Bool(Eval('isactive')),
+                If(Bool(Eval('active')),
                      [
                          ('state', 'not in', ['canceled'])
                      ],[]),
                ],
         ondelete='SET NULL', states={
-            'readonly': ~Eval('isactive')
+            'readonly': ~Eval('active')
             })
 
     @classmethod
@@ -56,7 +56,7 @@ class CondoParty:
             condoparty.unique_role_and_has_mandate()
 
     def unique_role_and_has_mandate(self):
-        if self.sepa_mandate and self.isactive:
+        if self.sepa_mandate and self.active:
             condoparties = Pool().get('condo.party').__table__()
             cursor = Transaction().cursor
 
@@ -64,7 +64,7 @@ class CondoParty:
                                  condoparties.id,
                                  where=(condoparties.unit == self.unit.id) &
                                        (condoparties.role == self.role) &
-                                       (condoparties.isactive == True) &
+                                       (condoparties.active == True) &
                                        (condoparties.sepa_mandate != None)))
 
             ids = [ids for (ids,) in cursor.fetchall()]

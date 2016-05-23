@@ -62,7 +62,7 @@ class PaymentDescriptionList(Report):
                                     condition=table1.unit == table2.id).select(
                                         table2.name, table1.role,
                                         where=((table1.sepa_mandate != None) &
-                                              (table1.isactive == True) &
+                                              (table1.active == True) &
                                               (table2.company == c['id'])),
                                         order_by=(Asc(table2.name), Asc(table1.role))))
                 item = {
