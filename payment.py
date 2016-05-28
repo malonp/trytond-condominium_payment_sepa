@@ -26,7 +26,7 @@ from itertools import groupby, chain
 
 import unicodecsv
 from cStringIO import StringIO
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 
 import genshi
 import genshi.template
@@ -64,12 +64,13 @@ class CondoPain(Workflow, ModelSQL, ModelView):
             },
         depends=['state'])
     sepa_receivable_flavor = fields.Selection([
-            (None, ''),
+#            (None, ''),
             ('pain.008.001.02', 'pain.008.001.02'),
-            ('pain.008.001.04', 'pain.008.001.04'),
+#            ('pain.008.001.04', 'pain.008.001.04'),
             ], 'Receivable Flavor', required=True,
         states={
             'readonly': Eval('state') != 'draft',
+            'required': Eval('state') != 'draft',
             },
         depends=['state'],
         translate=False)
@@ -151,6 +152,10 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         if not self.company.sepa_creditor_identifier:
             self.raise_user_error(
                 "Initiating Party must have a sepa creditor identifier")
+
+    @staticmethod
+    def default_sepa_receivable_flavor():
+        return 'pain.008.001.02'
 
     @staticmethod
     def default_state():
@@ -537,10 +542,18 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                     if group.message and len(information):
                         concepts = filter(lambda x:x[0]==condoparty.unit.name, information)
                         for concept in concepts:
-                            if ((len(concept)==4 and condoparty.role==(concept[3] if len(concept[3]) else None))
+                            if ((len(concept)==4 and condoparty.role==(concept[3] if len(concept[3]) else ''))
                                 or (len(concept)==3 and len(concepts)==1)):
-                                    condopayment.amount = Decimal(concept[1].replace(",", "."))
-                                    condopayment.description = concept[2]
+                                    try:
+                                        condopayment.amount = Decimal(concept[1].replace(",", "."))
+                                        condopayment.description = concept[2]
+                                    except DecimalException:
+                                        cls.raise_user_error('Amount of fee for unit "%s" is invalid!',
+                                                              condoparty.unit.name)
+
+                                    if condopayment.amount<=0:
+                                        cls.raise_user_warning('warn_invalid_amount.%d.%d' % (group.id, condoparty.id),
+                                            'Amount of fee for unit "%s" must be bigger than zero!', condoparty.unit.name)
 
                                     #Consider only condopayments included in group.message
                                     group.payments += (condopayment,)

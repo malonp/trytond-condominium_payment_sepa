@@ -561,6 +561,14 @@ msgctxt "error:condo.payment.group:"
 msgid "Company must have a sepa creditor identifier"
 msgstr "La Comunidad de Propietarios debe tener una identificación del acreedor"
 
+msgctxt "error:condo.payment.group:"
+msgid "Amount of fee for unit \"%s\" is invalid!"
+msgstr "Importe invalido en el recibo del inmueble \"%s\""
+
+msgctxt "error:condo.payment.group:"
+msgid "Amount of fee for unit \"%s\" must be bigger than zero!"
+msgstr "El importe del recibo del inmueble \"%s\" debe ser mayor que cero!"
+
 msgctxt "error:condo.payment:"
 msgid "Payment \"%s\" must be in draft before deletion."
 msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
