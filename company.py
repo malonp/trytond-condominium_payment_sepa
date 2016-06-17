@@ -28,11 +28,11 @@ from stdnum.iso7064 import mod_97_10
 from stdnum.eu.at_02 import is_valid, _to_base10
 import stdnum.exceptions
 
-__metaclass__ = PoolMeta
 __all__ = ['Company']
 
 
 class Company:
+    __metaclass__ = PoolMeta
     __name__ = 'company.company'
     sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'company',
         'SEPA Mandates')

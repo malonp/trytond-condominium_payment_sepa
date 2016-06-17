@@ -26,11 +26,10 @@ from trytond.tools import reduce_ids, grouped_slice
 from trytond.transaction import Transaction
 
 __all__ = ['BankAccount', 'BankAccountNumber']
-__metaclass__ = PoolMeta
 
 
 class BankAccount:
-    'Bank Account'
+    __metaclass__ = PoolMeta
     __name__ = 'bank.account'
 
     @classmethod
@@ -78,6 +77,7 @@ class BankAccount:
 
 
 class BankAccountNumber:
+    __metaclass__ = PoolMeta
     __name__ = 'bank.account.number'
     mandates = fields.One2Many('condo.payment.sepa.mandate',
         'account_number', 'Mandates')

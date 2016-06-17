@@ -27,11 +27,10 @@ from trytond.transaction import Transaction
 
 
 __all__ = ['CondoParty', 'Unit']
-__metaclass__ = PoolMeta
 
 
 class CondoParty:
-    'Condominium Party'
+    __metaclass__ = PoolMeta
     __name__ = 'condo.party'
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
@@ -74,6 +73,6 @@ class CondoParty:
 
 
 class Unit:
-    'Unit'
+    __metaclass__ = PoolMeta
     __name__ = 'condo.unit'
     payments = fields.One2Many( 'condo.payment', 'unit', 'Payments')

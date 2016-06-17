@@ -26,11 +26,11 @@ from trytond.tools import reduce_ids, grouped_slice
 from trytond.transaction import Transaction
 
 
-__metaclass__ = PoolMeta
 __all__ = ['Party']
 
 
 class Party:
+    __metaclass__ = PoolMeta
     __name__ = 'party.party'
     companies = fields.One2Many('company.company', 'party', 'Companies')
     sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'party',

@@ -25,7 +25,7 @@ from .party import *
 from .company import *
 from .condominium import *
 from .bank import *
-from report import *
+from .report import *
 
 def register():
     Pool.register(
