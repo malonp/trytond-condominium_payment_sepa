@@ -308,7 +308,10 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         ondelete='RESTRICT',
         domain=[
             ('type', '=', 'iban'),
-            ('account.active', '=', True),
+            If(Bool(Eval('readonly')),
+                                     [],
+                                     [('account.active', '=', True),]
+            ),
             ('account.owners.companies', '=', Eval('company')),
             ],
         states={
@@ -516,7 +519,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                 message = group.message.encode('utf-8')
                 f = StringIO(message)
                 r = unicodecsv.reader(f, delimiter=';', encoding='utf-8')
-                information = map(tuple, r)
+                information = list(map(tuple, r))
 
             #delete payments of this group with state='draft'
             CondoPayments.delete([p for p in group.payments if p.state=='draft'])
@@ -540,7 +543,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                       sepa_end_to_end_id = condoparty.unit.name)
                     #Read rest fields from message file
                     if group.message and len(information):
-                        concepts = filter(lambda x:x[0]==condoparty.unit.name, information)
+                        concepts = [x for x in information if x[0]==condoparty.unit.name]
                         for concept in concepts:
                             if ((len(concept)==4 and condoparty.role==(concept[3] if len(concept[3]) else ''))
                                 or (len(concept)==3 and len(concepts)==1)):
