@@ -500,6 +500,16 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                  where=table1.state != 'draft')
             return [('id', 'in', query)]
 
+    @staticmethod
+    def order_company(tables):
+        table, _ = tables[None]
+        return [table.company, table.date]
+
+    @staticmethod
+    def order_reference(tables):
+        table, _ = tables[None]
+        return [table.reference, table.company]
+
     @dualmethod
     @ModelView.button
     def generate_fees(cls, groups, _save=True):
