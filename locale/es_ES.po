@@ -136,14 +136,6 @@ msgctxt "field:condo.payment,company:"
 msgid "Company"
 msgstr "Com. de Propietarios"
 
-msgctxt "field:condo.payment,fee:"
-msgid "Fee"
-msgstr "Recibo"
-
-msgctxt "help:condo.payment,fee:"
-msgid "Check if this payment correspond to unit's fee"
-msgstr "Seleccionar si corresponde a un recibo de un inmueble"
-
 msgctxt "field:condo.payment,unit:"
 msgid "Unit"
 msgstr "Inmueble"

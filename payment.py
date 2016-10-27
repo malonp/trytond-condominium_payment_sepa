@@ -109,6 +109,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(CondoPain, cls).__setup__()
+        cls._order.insert(0, ('reference', 'DESC'))
         cls._error_messages.update({
                 'generate_error': ('Can not generate message "%s" of "%s"'),
                 })
@@ -354,6 +355,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(CondoPaymentGroup, cls).__setup__()
+        cls._order.insert(0, ('reference', 'DESC'))
         t = cls.__table__()
         cls._sql_constraints += [
             ('reference_unique', Unique(t,t.company, t.reference),
@@ -536,7 +538,6 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                ('party', '=', condoparty.party)])==0:
                     condopayment = CondoPayments(
                                       group = group,
-                                      fee = True,
                                       unit = condoparty.unit,
                                       #Set the condoparty as the party
                                       #(instead the debtor of the mandate condoparty.sepa_mandate.party)
@@ -601,7 +602,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                                    '{:04d}'.format(ddd.year)[-2:],
                                        company = condo[0],
                                        account_number = bankaccountnumber[0],
-                                       date = ddd + datetime.timedelta(days= 7-ddd.weekday() if ddd.weekday()>4 else 0),
+                                       date = ddd + datetime.timedelta(days= 2 if ddd.weekday()>4 else 0),
                                        sepa_charge_bearer = 'SLEV')
                     paymentgroup.save()
 
@@ -662,7 +663,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                     'company':            idc,
                     'account_number':     idb,
                     'date':               ddd +
-                                          datetime.timedelta(days= 7-ddd.weekday() if ddd.weekday()>4 else 0),
+                                          datetime.timedelta(days= 2 if ddd.weekday()>4 else 0),
                     'sepa_charge_bearer': 'SLEV'
                    }
             values.append(record)
@@ -683,11 +684,6 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
             })
     company = fields.Function(fields.Many2One('company.company', 'Company'),
         getter='get_company', searcher='search_company')
-    fee = fields.Boolean('Fee', help="Check if this payment correspond to unit's fee",
-        states={
-            'readonly': Eval('state') != 'draft',
-            },
-        depends=['state'])
     unit = fields.Many2One('condo.unit', 'Unit',
         domain=[ If(Bool(Eval('group')),
                        [
@@ -698,16 +694,14 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                ],
         states={
             'readonly': Eval('state') != 'draft',
-            'required': Bool(Eval('fee')),
-            'invisible': Not(Bool(Eval('fee')))
             },
-        depends=['group', 'fee'])
+        depends=['group'])
     unit_name=fields.Function(fields.Char('Unit'),
         getter='get_unit_name', searcher='search_unit_name')
     party = fields.Many2One('party.party', 'Ultimate Debtor', required=True,
         domain=[ If(Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
                  [],[
-                 If(Bool(Eval('fee')),
+                 If(Bool(Eval('unit')),
                        [
 #This party is owner or tenant of the unit and have a mandate for it (on his own name or not)
                            ('units.sepa_mandate.company', If(Bool(Eval('company')), '=', '!='), Eval('company')),
@@ -726,7 +720,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
-        depends=['group', 'company', 'fee'])
+        depends=['group', 'company', 'unit'])
     description = fields.Char('Description', size=140,
         states={
             'readonly': Eval('state') != 'draft',
@@ -756,7 +750,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                      []
                  ),
                  If(Bool(Eval('party')),
-                       [ If(Bool(Eval('fee')),
+                       [ If(Bool(Eval('unit')),
                                [
                                    ('condoparties.party', '=', Eval('party'))
                                ],
@@ -771,7 +765,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
-        depends=['company', 'fee', 'party'])
+        depends=['company', 'unit', 'party'])
     debtor = fields.Function(fields.Char('Debtor'),
         getter='get_debtor', searcher='search_debtor')
     type = fields.Selection([
@@ -886,10 +880,6 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         if not self.sepa_mandate.account_number:
             self.raise_user_error('invalid_mandate',
                 (self.party.name, self.sepa_mandate.identification))
-
-    @staticmethod
-    def default_fee():
-        return True
 
     @staticmethod
     def default_state():
