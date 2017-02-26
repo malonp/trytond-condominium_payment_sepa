@@ -22,12 +22,5 @@ this repository contains the full copyright notices and license terms. -->
             <field name="payments" mode="tree,form" colspan="4"
                 view_ids="condominium_payment_sepa.condopayment_view_list_without_company,condominium_payment_sepa.condopayment_view_form"/>
         </page>
-        <page string="Information" id="csv">
-            <field name="message" widget="binary" filename="filename"/>
-            <field name="message" colspan="6"/>
-        </page>
     </notebook>
-
-    <newline/>
-    <button name="generate_fees" string="Generate Fees" colspan="4"/>
 </form>

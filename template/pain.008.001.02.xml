@@ -9,22 +9,22 @@ this repository contains the full copyright notices and license terms. -->
     <xi:include href="base.xml"/>
     <!-- version 2 uses BIC instead of BICFI -->
     <py:def function="FinancialInstitution(bank, only_bic=False)">
-        <FinInstnId>
-            <BIC py:if="bank.bic">${bank.bic}</BIC>
-            <py:if test="not only_bic">
-                <!-- ClrSysMmbId -->
-                <Nm>${bank.party.name[:140]}</Nm>
-                <py:with vars="address = bank.party.address_get()">
-                    <PstlAdr py:if="address">
-                        ${PostalAddress(address)}
-                    </PstlAdr>
-                </py:with>
-            </py:if>
-            <Othr py:if="not bank.bic">
-                <Id>NOTPROVIDED</Id>
-            </Othr>
-        </FinInstnId>
-        <!-- BrnchId -->
+                    <FinInstnId>
+                        <BIC py:if="bank.bic">${bank.bic}</BIC>
+                        <py:if test="not only_bic">
+                            <!-- ClrSysMmbId -->
+                            <Nm>${bank.party.name[:140]}</Nm>
+                            <py:with vars="address = bank.party.address_get()">
+                                <PstlAdr py:if="address">
+                                    ${PostalAddress(address)}
+                                </PstlAdr>
+                            </py:with>
+                        </py:if>
+                        <Othr py:if="not bank.bic">
+                            <Id>NOTPROVIDED</Id>
+                        </Othr>
+                    </FinInstnId>
+                    <!-- BrnchId -->
     </py:def>
     <CstmrDrctDbtInitn>
         <GrpHdr>
@@ -86,7 +86,8 @@ this repository contains the full copyright notices and license terms. -->
                 </PrvtId>
               </Id>
             </CdtrSchmeId>
-            <DrctDbtTxInf py:for="payment in payments">
+            <py:for each="payment in payments">
+            <DrctDbtTxInf>
                 <PmtId>
                     <EndToEndId>${payment.sepa_end_to_end_id}</EndToEndId>
                 </PmtId>
@@ -129,6 +130,7 @@ this repository contains the full copyright notices and license terms. -->
                     <Ustrd>${payment.description[:140]}</Ustrd>
                 </RmtInf>
             </DrctDbtTxInf>
+            </py:for>
         </PmtInf>
     </CstmrDrctDbtInitn>
 </Document>

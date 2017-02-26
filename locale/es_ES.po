@@ -115,10 +115,6 @@ msgctxt "field:condo.payment.group,sepa_charge_bearer:"
 msgid "Charge Bearer"
 msgstr "Clausula de Gastos"
 
-msgctxt "field:condo.payment.group,message:"
-msgid "Message"
-msgstr "Mensaje"
-
 msgctxt "field:condo.payment.group,nboftxs:"
 msgid "Number of Transactions"
 msgstr "Núm. Operaciones"
@@ -348,14 +344,6 @@ msgid "Payments"
 msgstr "Recibos"
 
 msgctxt "view:condo.payment.group:"
-msgid "Information"
-msgstr "Información"
-
-msgctxt "view:condo.payment.group:"
-msgid "Generate Fees"
-msgstr "Generar Recibos"
-
-msgctxt "view:condo.payment.group:"
 msgid "Number of Transactions"
 msgstr "Núm. Operaciones"
 
@@ -427,10 +415,6 @@ msgctxt "view:party.party:"
 msgid "Mandates"
 msgstr "Domiciliaciones"
 
-
-msgctxt "model:ir.action,name:payment_description_list"
-msgid "PaymentGroup Concepts List"
-msgstr "Planilla de Conceptos"
 
 msgctxt "model:ir.action.act_window.domain,name:act_condopayment_form_domain_all"
 msgid "All"
@@ -552,14 +536,6 @@ msgstr "La fecha de cargo del recibo debe ser un dia laborable!"
 msgctxt "error:condo.payment.group:"
 msgid "Company must have a sepa creditor identifier"
 msgstr "La Comunidad de Propietarios debe tener una identificación del acreedor"
-
-msgctxt "error:condo.payment.group:"
-msgid "Amount of fee for unit \"%s\" is invalid!"
-msgstr "Importe invalido en el recibo del inmueble \"%s\""
-
-msgctxt "error:condo.payment.group:"
-msgid "Amount of fee for unit \"%s\" must be bigger than zero!"
-msgstr "El importe del recibo del inmueble \"%s\" debe ser mayor que cero!"
 
 msgctxt "error:condo.payment:"
 msgid "Payment \"%s\" must be in draft before deletion."

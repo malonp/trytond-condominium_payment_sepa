@@ -24,10 +24,6 @@ import os
 import unicodedata
 from itertools import groupby, chain
 
-import unicodecsv
-from cStringIO import StringIO
-from decimal import Decimal, DecimalException
-
 import genshi
 import genshi.template
 from sql import Literal
@@ -340,11 +336,6 @@ class CondoPaymentGroup(ModelSQL, ModelView):
             'readonly': Bool(Eval('readonly'))
             },
         depends=['readonly'])
-    message = fields.Text('Message',
-        states={
-            'readonly': Bool(Eval('readonly'))
-            },
-        depends=['readonly'])
     nboftxs = fields.Function(fields.Integer('Number of Transactions'),
         'get_nboftxs')
     ctrlsum = fields.Function(fields.Numeric('Control Sum', digits=(11,2)),
@@ -366,10 +357,6 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                     ),
                 'payments_approved': ('PaymentGroup "%s" has payments approved'
                     ' with earlier date.'),
-                })
-        cls._buttons.update({
-                'generate_fees': {
-                    'invisible': Bool(Eval('readonly'))},
                 })
 
     @classmethod
@@ -506,68 +493,6 @@ class CondoPaymentGroup(ModelSQL, ModelView):
     def order_reference(tables):
         table, _ = tables[None]
         return [table.reference, table.company]
-
-    @dualmethod
-    @ModelView.button
-    def generate_fees(cls, groups, _save=True):
-        pool = Pool()
-
-        CondoParties = pool.get('condo.party')
-        CondoPayments = pool.get('condo.payment')
-
-        for group in groups:
-            condoparties = CondoParties.search([('unit.company', '=', group.company),
-                ('sepa_mandate', '!=', None),
-                ('sepa_mandate.state', 'not in', ['draft', 'canceled']),
-                ('sepa_mandate.account_number', '!=', None),
-                ], order=[('unit.name', 'ASC'),])
-
-            if group.message:
-                message = group.message.encode('utf-8')
-                f = StringIO(message)
-                r = unicodecsv.reader(f, delimiter=';', encoding='utf-8')
-                information = list(map(tuple, r))
-
-            #delete payments of this group with state='draft'
-            CondoPayments.delete([p for p in group.payments if p.state=='draft'])
-
-            for condoparty in condoparties:
-                if CondoPayments.search_count([
-                               ('group', '=', group),
-                               ('unit', '=', condoparty.unit),
-                               ('party', '=', condoparty.party)])==0:
-                    condopayment = CondoPayments(
-                                      group = group,
-                                      unit = condoparty.unit,
-                                      #Set the condoparty as the party
-                                      #(instead the debtor of the mandate condoparty.sepa_mandate.party)
-                                      party = condoparty.party,
-                                      currency = group.company.currency,
-                                      sepa_mandate = condoparty.sepa_mandate,
-                                      type = condoparty.sepa_mandate.type,
-                                      date = group.date,
-                                      sepa_end_to_end_id = condoparty.unit.name)
-                    #Read rest fields from message file
-                    if group.message and len(information):
-                        concepts = [x for x in information if x[0]==condoparty.unit.name]
-                        for concept in concepts:
-                            if ((len(concept)==4 and (condoparty.role==concept[3] if bool(concept[3]) else not bool(condoparty.role)))
-                                or (len(concept)==3 and len(concepts)==1)):
-                                    try:
-                                        condopayment.amount = Decimal(concept[1].replace(",", "."))
-                                        condopayment.description = concept[2]
-                                    except DecimalException:
-                                        cls.raise_user_error('Amount of fee for unit "%s" is invalid!',
-                                                              condoparty.unit.name)
-
-                                    if condopayment.amount<=0:
-                                        cls.raise_user_warning('warn_invalid_amount.%d.%d' % (group.id, condoparty.id),
-                                            'Amount of fee for unit "%s" must be bigger than zero!', condoparty.unit.name)
-
-                                    #Consider only condopayments included in group.message
-                                    group.payments += (condopayment,)
-        if _save:
-            cls.save(groups)
 
     @classmethod
     def PreparePaymentGroup(cls):
@@ -1207,7 +1132,6 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                 'delete_draft_canceled': ('You can not delete mandate "%s" '
                     'because it is not in draft or canceled state or has payments.'),
                 })
-        cls._history = True
 
     @staticmethod
     def default_type():
