@@ -357,6 +357,22 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                     ' with earlier date.'),
                 })
 
+    @staticmethod
+    def default_sepa_batch_booking():
+        Configuration = Pool().get('condo.payment.group.configuration')
+        config = Configuration(1)
+        if config.sepa_batch_booking_selection == '1':
+            return True
+        elif config.sepa_batch_booking_selection == '0':
+            return False
+
+    @staticmethod
+    def default_sepa_charge_bearer():
+        Configuration = Pool().get('condo.payment.group.configuration')
+        config = Configuration(1)
+        if config.sepa_charge_bearer:
+            return config.sepa_charge_bearer
+
     @classmethod
     def validate(cls, paymentgroups):
         super(CondoPaymentGroup, cls).validate(paymentgroups)
@@ -424,23 +440,6 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         if not self.company.sepa_creditor_identifier:
             self.raise_user_error(
                 "Company must have a sepa creditor identifier")
-
-    @staticmethod
-    def default_date():
-        pool = Pool()
-        Date = pool.get('ir.date')
-        d = Date.today()
-        #set tomorrow (or the next business day after tomorrow) as date
-        next = d + datetime.timedelta(days= 7-d.weekday() if d.weekday()>3 else 1)
-        return next
-
-    @staticmethod
-    def default_sepa_batch_booking():
-        return True
-
-    @staticmethod
-    def default_sepa_charge_bearer():
-        return 'SLEV'
 
     def get_nboftxs(self, name):
         if self.payments:

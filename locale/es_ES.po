@@ -124,6 +124,19 @@ msgid "Control Sum"
 msgstr "Suma de Control"
 
 
+msgctxt "field:condo.payment.group.configuration,sepa_batch_booking_selection:"
+msgid "Default Booking"
+msgstr "Indicador apunte en cuenta"
+
+msgctxt "field:condo.payment.group.configuration,sepa_batch_booking:"
+msgid "Default Booking"
+msgstr "Indicador apunte en cuenta"
+
+msgctxt "field:condo.payment.group.configuration,sepa_charge_bearer:"
+msgid "Default Charge Bearer"
+msgstr "Clausula de Gastos"
+
+
 msgctxt "field:condo.payment,group:"
 msgid "Group"
 msgstr "Facturación"
@@ -238,6 +251,48 @@ msgctxt "selection:condo.payment.pain,state:"
 msgid "Rejected"
 msgstr "Anulado"
 
+msgctxt "selection:condo.payment.group,sepa_charge_bearer:"
+msgid "Debtor"
+msgstr "Deudor"
+
+msgctxt "selection:condo.payment.group,sepa_charge_bearer:"
+msgid "Creditor"
+msgstr "Acreedor"
+
+msgctxt "selection:condo.payment.group,sepa_charge_bearer:"
+msgid "Shared"
+msgstr "Compartidos"
+
+msgctxt "selection:condo.payment.group,sepa_charge_bearer:"
+msgid "Service Level"
+msgstr "Reglas del Servicio"
+
+
+msgctxt "selection:condo.payment.group.configuration,sepa_batch_booking_selection:"
+msgid "Batch"
+msgstr "Por Lotes"
+
+msgctxt "selection:condo.payment.group.configuration,sepa_batch_booking_selection:"
+msgid "Per Transaction"
+msgstr "Por Cada Cargo"
+
+msgctxt "selection:condo.payment.group.configuration,sepa_charge_bearer:"
+msgid "Debtor"
+msgstr "Deudor"
+
+msgctxt "selection:condo.payment.group.configuration,sepa_charge_bearer:"
+msgid "Creditor"
+msgstr "Acreedor"
+
+msgctxt "selection:condo.payment.group.configuration,sepa_charge_bearer:"
+msgid "Shared"
+msgstr "Compartidos"
+
+msgctxt "selection:condo.payment.group.configuration,sepa_charge_bearer:"
+msgid "Service Level"
+msgstr "Reglas del Servicio"
+
+
 msgctxt "selection:condo.payment,state:"
 msgid "Draft"
 msgstr "Borrador"
@@ -285,8 +340,8 @@ msgstr "Anulado"
 
 
 msgctxt "view:company.company:"
-msgid "Invoicing"
-msgstr "Domiciliaciones"
+msgid "Configuration"
+msgstr "Configuración"
 
 msgctxt "view:company.company:"
 msgid "Creditor Identifier"
@@ -457,6 +512,12 @@ msgctxt "model:ir.action,name:act_mandate_form"
 msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
+
+msgctxt "model:ir.action,name:act_configuration_form"
+msgid "Payments Group Configuration"
+msgstr "Configuración de Facturaciones"
+
+
 msgctxt "model:ir.ui.menu,name:menu_mandate_form"
 msgid "SEPA Mandates"
 msgstr "Mandatos SEPA"
@@ -476,6 +537,16 @@ msgstr "Facturaciones"
 msgctxt "model:ir.ui.menu,name:menu_payment_pain_form"
 msgid "SDD Messages"
 msgstr "Mensajes SDD"
+
+
+msgctxt "model:ir.ui.menu,name:menu_payment_configuration_form"
+msgid "Configuration"
+msgstr "Configuración"
+
+msgctxt "model:ir.ui.menu,name:menu_payment_configuration_group_form"
+msgid "Payments Group"
+msgstr "Facturaciones"
+
 
 msgctxt "model:ir.action,name:report_condo_mandate"
 msgid "Mandate"

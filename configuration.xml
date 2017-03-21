@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+
+<!-- Add icons -->
+
+
+<!-- Configuration administration group -->
+
+
+<!-- Form View -->
+        <record model="ir.ui.view" id="condopaymentgroup_configuration_view_form">
+            <field name="model">condo.payment.group.configuration</field>
+            <field name="type">form</field>
+            <field name="name">configuration_form</field>
+        </record>
+
+<!-- List View -->
+
+
+<!-- Actions -->
+        <record model="ir.action.act_window" id="act_configuration_form">
+            <field name="name">Payments Group Configuration</field>
+            <field name="res_model">condo.payment.group.configuration</field>
+        </record>
+        <record model="ir.action.act_window.view" id="act_configuration_condopaymentgroup_form_view">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="condopaymentgroup_configuration_view_form"/>
+            <field name="act_window" ref="act_configuration_form"/>
+        </record>
+
+<!-- Menu -->
+        <menuitem name="Configuration" parent="menu_condofinancial_form"
+            sequence="1" id="menu_payment_configuration_form" icon="tryton-preferences"/>
+
+        <menuitem name="Payments Group" parent="menu_payment_configuration_form"
+            sequence="10" action="act_configuration_form"
+            id="menu_payment_configuration_group_form" icon="tryton-list"/>
+
+<!-- Access permissions -->
+
+    </data>
+</tryton>

@@ -20,30 +20,32 @@
 ##############################################################################
 
 
-from trytond.pool import Pool
-
-from .bank import *
-from .company import *
-from .condominium import *
-from .configuration import *
-from .party import *
-from .payment import *
+from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 
 
-def register():
-    Pool.register(
-        Company,
-        CondoMandate,
-        CondoPain,
-        CondoParty,
-        CondoPaymentGroup,
-        CondoPayment,
-        Configuration,
-        BankAccount,
-        BankAccountNumber,
-        Party,
-        Unit,
-        module='condominium_payment_sepa', type_='model')
-    Pool.register(
-        CondoMandateReport,
-        module='condominium_payment_sepa', type_='report')
+__all__ = ['Configuration']
+
+
+class Configuration(ModelSingleton, ModelSQL, ModelView):
+    'Condominium Payment Group Configuration'
+    __name__ = 'condo.payment.group.configuration'
+
+    sepa_batch_booking_selection = fields.Selection([
+            (None, ''),
+            ('1', 'Batch'),
+            ('0', 'Per Transaction'),
+             ], 'Default Booking',
+        )
+    sepa_batch_booking = fields.Function(fields.Boolean('Default Booking'),
+        getter='get_sepa_batch_booking',
+        )
+    sepa_charge_bearer = fields.Selection([
+            (None, ''),
+            ('DEBT', 'Debtor'),
+            ('CRED', 'Creditor'),
+            ('SHAR', 'Shared'),
+            ('SLEV', 'Service Level'),
+            ], 'Default Charge Bearer',
+        )
+
+
