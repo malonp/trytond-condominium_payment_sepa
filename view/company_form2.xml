@@ -3,10 +3,12 @@
 this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath expr="/form/notebook" position="inside">
-        <page string="Invoicing" id="condo_invoicing">
-            <separator string="Creditor Identifier" colspan="4" id="sepa"/>
+        <page string="Configuration" id="condo_configuration">
 
-            <group colspan="2" col="6" id="codes">
+            <label id="condo_configuration_emptyline_1"/>
+            <newline/>
+
+            <group string="Creditor Identifier" colspan="2" col="6" id="codes">
                 <label name="creditor_bussines_code"/>
                 <field name="creditor_bussines_code"/>
 

@@ -339,6 +339,11 @@ msgid "Canceled"
 msgstr "Anulado"
 
 
+msgctxt "model:res.group,name:group_condominium_payment_admin"
+msgid "Condominium Payment Administration"
+msgstr "Administración de Facturaciones de Comunidades de Propietarios"
+
+
 msgctxt "view:company.company:"
 msgid "Configuration"
 msgstr "Configuración"
