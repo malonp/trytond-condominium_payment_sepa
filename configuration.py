@@ -23,10 +23,10 @@
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 
 
-__all__ = ['Configuration']
+__all__ = ['CondoPaymentGroupConfiguration', 'CondoMandateConfiguration']
 
 
-class Configuration(ModelSingleton, ModelSQL, ModelView):
+class CondoPaymentGroupConfiguration(ModelSingleton, ModelSQL, ModelView):
     'Condominium Payment Group Configuration'
     __name__ = 'condo.payment.group.configuration'
 
@@ -35,7 +35,7 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
             ('1', 'Batch'),
             ('0', 'Per Transaction'),
              ], 'Default Booking',
-        )
+        sort=False,)
     sepa_batch_booking = fields.Function(fields.Boolean('Default Booking'),
         getter='get_sepa_batch_booking',
         )
@@ -46,6 +46,20 @@ class Configuration(ModelSingleton, ModelSQL, ModelView):
             ('SHAR', 'Shared'),
             ('SLEV', 'Service Level'),
             ], 'Default Charge Bearer',
-        )
+        sort=False,)
 
 
+class CondoMandateConfiguration(ModelSingleton, ModelSQL, ModelView):
+    'Condominium SEPA Mandate Configuration'
+    __name__ = 'condo.payment.sepa.mandate.configuration'
+
+    type = fields.Selection([
+            ('recurrent', 'Recurrent'),
+            ('one-off', 'One-off'),
+            ], 'Type',
+        sort=False,)
+    scheme = fields.Selection([
+            ('CORE', 'Core'),
+            ('B2B', 'Business to Business'),
+            ], 'Scheme',
+        sort=False,)

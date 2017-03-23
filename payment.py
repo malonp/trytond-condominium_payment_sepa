@@ -330,7 +330,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
             ('CRED', 'Creditor'),
             ('SHAR', 'Shared'),
             ('SLEV', 'Service Level'),
-            ], 'Charge Bearer', required=True,
+            ], 'Charge Bearer', required=True, sort=False,
         states={
             'readonly': Bool(Eval('readonly'))
             },
@@ -1025,11 +1025,17 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
 
     @staticmethod
     def default_type():
-        return 'recurrent'
+        Configuration = Pool().get('condo.payment.sepa.mandate.configuration')
+        config = Configuration(1)
+        if config.type:
+            return config.type
 
     @staticmethod
     def default_scheme():
-        return 'CORE'
+        Configuration = Pool().get('condo.payment.sepa.mandate.configuration')
+        config = Configuration(1)
+        if config.scheme:
+            return config.scheme
 
     @staticmethod
     def default_state():

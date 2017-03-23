@@ -202,23 +202,23 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
 <!-- Menu -->
-        <menuitem name="SEPA Mandates" parent="condominium.menu_condominium" 
-            sequence="40" action="act_mandate_form" 
-            id="menu_mandate_form" icon="condo_mandate"/>
-
         <menuitem name="Invoicing" parent="condominium.menu_condominium"
             sequence="50" id="menu_condofinancial_form" icon="condo_financial"/>
 
+        <menuitem name="SEPA Mandates" parent="menu_condofinancial_form"
+            sequence="10" action="act_mandate_form"
+            id="menu_mandate_form" icon="condo_mandate"/>
+
         <menuitem name="Payments" parent="menu_condofinancial_form"
-            sequence="10" action="act_condopayment_form"
+            sequence="20" action="act_condopayment_form"
             id="menu_payment_form" icon="condo_payment"/>
 
         <menuitem name="Group" parent="menu_condofinancial_form"
-            sequence="20" action="act_condopaymentgroup_form"
+            sequence="30" action="act_condopaymentgroup_form"
             id="menu_payment_group_form" icon="condo_group"/>
 
         <menuitem name="SDD Messages" parent="menu_condofinancial_form"
-            sequence="30" action="act_condopain_form"
+            sequence="40" action="act_condopain_form"
             id="menu_payment_pain_form" icon="condo_pain"/>
 
 <!-- Access permissions -->

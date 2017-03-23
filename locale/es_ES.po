@@ -235,6 +235,15 @@ msgid "State"
 msgstr "Situación"
 
 
+msgctxt "field:condo.payment.sepa.mandate.configuration,type:"
+msgid "Type"
+msgstr "Tipo"
+
+msgctxt "field:condo.payment.sepa.mandate.configuration,scheme:"
+msgid "Scheme"
+msgstr "Modalidad"
+
+
 msgctxt "selection:condo.payment.pain,state:"
 msgid "Draft"
 msgstr "Borrador"
@@ -337,6 +346,15 @@ msgstr "Firmado"
 msgctxt "selection:condo.payment.sepa.mandate,state:"
 msgid "Canceled"
 msgstr "Anulado"
+
+
+msgctxt "selection:condo.payment.sepa.mandate.configuration,type:"
+msgid "Recurrent"
+msgstr "Recurrente"
+
+msgctxt "selection:condo.payment.sepa.mandate.configuration,type:"
+msgid "One-off"
+msgstr "Único"
 
 
 msgctxt "model:res.group,name:group_condominium_payment_admin"
@@ -518,7 +536,11 @@ msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
 
-msgctxt "model:ir.action,name:act_configuration_form"
+msgctxt "model:ir.action,name:act_configuration_mandate_form"
+msgid "Mandates Configuration"
+msgstr "Configuración de Domiciliaciones"
+
+msgctxt "model:ir.action,name:act_configuration_paymentgroup_form"
 msgid "Payments Group Configuration"
 msgstr "Configuración de Facturaciones"
 
@@ -547,6 +569,10 @@ msgstr "Mensajes SDD"
 msgctxt "model:ir.ui.menu,name:menu_payment_configuration_form"
 msgid "Configuration"
 msgstr "Configuración"
+
+msgctxt "model:ir.ui.menu,name:menu_payment_configuration_mandate_form"
+msgid "Mandates"
+msgstr "Domiciliaciones"
 
 msgctxt "model:ir.ui.menu,name:menu_payment_configuration_group_form"
 msgid "Payments Group"
