@@ -15,15 +15,15 @@ msgctxt "field:company.company,groups_payments:"
 msgid "Condominium Payment Group"
 msgstr "Facturaciones de la Comunidad"
 
-msgctxt "field:company.company,creditor_bussines_code:"
-msgid "Creditor Bussines Code"
+msgctxt "field:company.company,creditor_business_code:"
+msgid "Creditor Business Code"
 msgstr "Código de Negocio"
 
 msgctxt "field:company.company,sepa_creditor_identifier:"
 msgid "SEPA Creditor Identifier"
 msgstr "Identificación del Acreedor"
 
-msgctxt "help:company.company,creditor_bussines_code:"
+msgctxt "help:company.company,creditor_business_code:"
 msgid "Code used in the SEPA Creditor Identifier"
 msgstr "Código utilizado en la obtención del identificador del acreedor (AT-02)"
 

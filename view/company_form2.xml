@@ -9,8 +9,8 @@ this repository contains the full copyright notices and license terms. -->
             <newline/>
 
             <group string="Creditor Identifier" colspan="2" col="6" id="codes">
-                <label name="creditor_bussines_code"/>
-                <field name="creditor_bussines_code"/>
+                <label name="creditor_business_code"/>
+                <field name="creditor_business_code"/>
 
                 <label name="sepa_creditor_identifier"/>
                 <field name="sepa_creditor_identifier"/>

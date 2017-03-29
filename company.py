@@ -38,7 +38,7 @@ class Company:
         'SEPA Mandates')
     groups_payments = fields.One2Many('condo.payment.group', 'company', 'Condominium Payment Group',
         readonly=True)
-    creditor_bussines_code = fields.Char('Creditor Bussines Code', size=3,
+    creditor_business_code = fields.Char('Creditor Business Code', size=3,
        help='Code used in the SEPA Creditor Identifier')
     sepa_creditor_identifier = fields.Char('SEPA Creditor Identifier', size=35)
 
@@ -61,7 +61,7 @@ class Company:
                 })
 
     @staticmethod
-    def default_creditor_bussines_code():
+    def default_creditor_business_code():
         return 'ZZZ'
 
     @classmethod
@@ -86,11 +86,11 @@ class Company:
                     (company.party.name))
 
             number = _to_base10(company.party.vat_code[:2] + '00' +
-                company.creditor_bussines_code +
+                company.creditor_business_code +
                 company.party.vat_code[2:].upper())
             check_sum = mod_97_10.calc_check_digits(number[:-2])
             company.sepa_creditor_identifier = (company.party.vat_code[:2] + check_sum +
-                company.creditor_bussines_code +
+                company.creditor_business_code +
                 company.party.vat_code[2:].upper())
         if _save:
             cls.save(companies)
