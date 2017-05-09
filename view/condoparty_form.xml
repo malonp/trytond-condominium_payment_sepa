@@ -3,7 +3,7 @@
 this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath
-        expr="/form/field[@name='address']"
+        expr="/form/field[@name='active']"
         position="after">
         <newline/>
         <label name="sepa_mandate"/>
