@@ -40,7 +40,8 @@ this repository contains the full copyright notices and license terms. -->
             </InitgPty>
             <!-- FwdgAgt -->
         </GrpHdr>
-        <PmtInf py:for="key, payments in pain.sepa_payments">
+        <py:for="key, payments in pain.sepa_payments">
+        <PmtInf>
             <PmtInfId>${(key['date'].strftime("%Y%m%d%H%M%S") + key['sequence_type'] + '-' + key['group'].company.sepa_creditor_identifier)[-35:]}</PmtInfId>
             <PmtMtd>DD</PmtMtd>
             <BtchBookg>${'true' if key['group'].sepa_batch_booking else 'false'}</BtchBookg>
