@@ -40,7 +40,7 @@ this repository contains the full copyright notices and license terms. -->
             </InitgPty>
             <!-- FwdgAgt -->
         </GrpHdr>
-        <py:for="key, payments in pain.sepa_payments">
+        <py:for each="key, payments in pain.sepa_payments">
         <PmtInf>
             <PmtInfId>${(key['date'].strftime("%Y%m%d%H%M%S") + key['sequence_type'] + '-' + key['group'].company.sepa_creditor_identifier)[-35:]}</PmtInfId>
             <PmtMtd>DD</PmtMtd>
@@ -133,5 +133,6 @@ this repository contains the full copyright notices and license terms. -->
             </DrctDbtTxInf>
             </py:for>
         </PmtInf>
+        </py:for>
     </CstmrDrctDbtInitn>
 </Document>
