@@ -1064,12 +1064,21 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         #Deactivate mandate as unit mandate on canceled state
         if (self.id > 0) and self.state=='canceled':
             condoparties = Pool().get('condo.party').__table__()
+            condopayments = Pool().get('condo.payment').__table__()
             cursor = Transaction().cursor
+
+            cursor.execute(*condopayments.select(condopayments.id,
+                                        where=(condopayments.sepa_mandate == self.id) & (
+                                              (condopayments.state == 'draft') | (condopayments.state == 'approved')),
+                                        ))
+            ids = [ids for (ids,) in cursor.fetchall()]
+            if len(ids):
+                self.raise_user_error('Can\'t cancel mandate "%s".\nThere are %s payments in draft or approved state with this mandate!',
+                                                              (self.identification, len(ids)))
 
             cursor.execute(*condoparties.select(condoparties.id,
                                         where=(condoparties.sepa_mandate == self.id) &
                                               (condoparties.active == True)))
-
             ids = [ids for (ids,) in cursor.fetchall()]
             if len(ids):
                 self.raise_user_warning('warn_canceled_mandate',

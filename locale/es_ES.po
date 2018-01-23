@@ -1,4 +1,4 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -674,6 +674,10 @@ msgstr "Este identificador SEPA está en uso en esta comunidad"
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "You can not delete mandate \"%s\" because it is not in draft or canceled state or has payments."
 msgstr "No puede eliminar la orden \"%s\" porque no es un borrador ni está cancelada o tiene recibos."
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "Can't cancel mandate \"%s\".\nThere are %s payments in draft or approved state with this mandate!"
+msgstr "No se puede anular la domiciliación \"%s\".\nHay %s recibos en borrador o aprobados con ella!"
 
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "Mandate \"%s\" will be canceled as mean of payment in %d unit(s)/apartment(s)!"
