@@ -319,7 +319,7 @@ msgid "Succeeded"
 msgstr "Con éxito"
 
 msgctxt "selection:condo.payment,state:"
-msgid "Failed'"
+msgid "Failed"
 msgstr "Fallado"
 
 
