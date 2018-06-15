@@ -28,8 +28,7 @@ from trytond.transaction import Transaction
 __all__ = ['BankAccount', 'BankAccountNumber']
 
 
-class BankAccount:
-    __metaclass__ = PoolMeta
+class BankAccount(metaclass=PoolMeta):
     __name__ = 'bank.account'
 
     @classmethod
@@ -43,7 +42,7 @@ class BankAccount:
         if (self.id > 0) and not self.active:
             mandates = Pool().get('condo.payment.sepa.mandate').__table__()
             condoparties = Pool().get('condo.party').__table__()
-            cursor = Transaction().cursor
+            cursor = Transaction().connection.cursor()
 
             red_sql = reduce_ids(mandates.account_number, [x.id for x in self.numbers])
             cursor.execute(*mandates.select(mandates.id,
@@ -76,8 +75,7 @@ class BankAccount:
                                 where=red_sql))
 
 
-class BankAccountNumber:
-    __metaclass__ = PoolMeta
+class BankAccountNumber(metaclass=PoolMeta):
     __name__ = 'bank.account.number'
     mandates = fields.One2Many('condo.payment.sepa.mandate',
         'account_number', 'Mandates')

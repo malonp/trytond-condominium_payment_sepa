@@ -29,8 +29,7 @@ from trytond.transaction import Transaction
 __all__ = ['CondoParty', 'Unit']
 
 
-class CondoParty:
-    __metaclass__ = PoolMeta
+class CondoParty(metaclass=PoolMeta):
     __name__ = 'condo.party'
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
@@ -57,7 +56,7 @@ class CondoParty:
     def unique_role_and_has_mandate(self):
         if self.sepa_mandate and self.active:
             condoparties = Pool().get('condo.party').__table__()
-            cursor = Transaction().cursor
+            cursor = Transaction().connection.cursor()
 
             cursor.execute(*condoparties.select(
                                  condoparties.id,
@@ -72,7 +71,6 @@ class CondoParty:
                     "Cant be two or more parties with mandates and the same role!")
 
 
-class Unit:
-    __metaclass__ = PoolMeta
+class Unit(metaclass=PoolMeta):
     __name__ = 'condo.unit'
     payments = fields.One2Many( 'condo.payment', 'unit', 'Payments')

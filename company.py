@@ -31,8 +31,7 @@ import stdnum.exceptions
 __all__ = ['Company']
 
 
-class Company:
-    __metaclass__ = PoolMeta
+class Company(metaclass=PoolMeta):
     __name__ = 'company.company'
     sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'company',
         'SEPA Mandates')
@@ -81,17 +80,17 @@ class Company:
     @ModelView.button
     def calculate_sepa_creditor_identifier(cls, companies, _save=True):
         for company in companies:
-            if not company.party.vat_code:
+            if not company.party.tax_identifier:
                 cls.raise_user_error('without_creditor_identifier',
                     (company.party.name))
 
-            number = _to_base10(company.party.vat_code[:2] + '00' +
+            number = _to_base10(company.party.tax_identifier.code[:2] + '00' +
                 company.creditor_business_code +
-                company.party.vat_code[2:].upper())
+                company.party.tax_identifier.code[2:].upper())
             check_sum = mod_97_10.calc_check_digits(number[:-2])
-            company.sepa_creditor_identifier = (company.party.vat_code[:2] + check_sum +
+            company.sepa_creditor_identifier = (company.party.tax_identifier.code[:2] + check_sum +
                 company.creditor_business_code +
-                company.party.vat_code[2:].upper())
+                company.party.tax_identifier.code[2:].upper())
         if _save:
             cls.save(companies)
 

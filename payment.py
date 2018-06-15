@@ -192,7 +192,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         pool = Pool()
         Payment = pool.get('condo.payment')
         payment = Payment.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         pids = [p.id for payments in [group.payments for pain in pains for group in pain.groups] for p in payments]
         for sub_ids in grouped_slice(pids):
@@ -209,7 +209,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         pool = Pool()
         Payment = pool.get('condo.payment')
         payment = Payment.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         for pain in pains:
             pids = [p.id for group in pain.groups for p in group.payments]
@@ -229,10 +229,10 @@ class CondoPain(Workflow, ModelSQL, ModelView):
 
                 pain.save()
             except:
-                cursor.rollback()
+                Transaction().rollback()
                 cls.raise_user_error('generate_error', (pain.reference,pain.company.party.name))
             else:
-                cursor.commit()
+                Transaction().commit()
 
     @classmethod
     @ModelView.button
@@ -241,7 +241,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         pool = Pool()
         Payment = pool.get('condo.payment')
         payment = Payment.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         pids = [p.id for payments in [group.payments for pain in pains for group in pain.groups] for p in payments]
         for sub_ids in grouped_slice(pids):
@@ -258,7 +258,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         pool = Pool()
         Payment = pool.get('condo.payment')
         payment = Payment.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         pids = [p.id for payments in [group.payments for pain in pains for group in pain.groups] for p in payments]
         for sub_ids in grouped_slice(pids):
@@ -382,8 +382,8 @@ class CondoPaymentGroup(ModelSQL, ModelView):
 
         for paymentgroup in paymentgroups:
             if paymentgroup.readonly:
-                with Transaction().new_cursor(readonly=True):
-                    cursor = Transaction().cursor
+                with Transaction().new_transaction(readonly=True) as transaction,\
+                    transaction.connection.cursor() as cursor:
                     cursor.execute(*table.select(table.date,
                                  where=(table.id == paymentgroup.id) &
                                        (table.date != paymentgroup.date)))
@@ -392,7 +392,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                             )
                 return
 
-            cursor = Transaction().cursor
+            cursor = Transaction().connection.cursor()
             cursor.execute(*payments.select(payments.id,
                          where=(payments.group == paymentgroup.id) &
                                (payments.date < paymentgroup.date) &
@@ -668,8 +668,8 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
         for payment in payments:
             if payment.state!='draft':
-                with Transaction().new_cursor(readonly=True):
-                    cursor = Transaction().cursor
+                with Transaction().new_transaction(readonly=True) as transaction,\
+                    transaction.connection.cursor() as cursor:
                     cursor.execute(*table.select(table.id,
                                  where=(table.id == payment.id) &
                                        (table.date != payment.date)))
@@ -1065,7 +1065,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         if (self.id > 0) and self.state=='canceled':
             condoparties = Pool().get('condo.party').__table__()
             condopayments = Pool().get('condo.payment').__table__()
-            cursor = Transaction().cursor
+            cursor = Transaction().connection.cursor()
 
             cursor.execute(*condopayments.select(condopayments.id,
                                         where=(condopayments.sepa_mandate == self.id) & (
@@ -1120,7 +1120,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         pool = Pool()
         Payment = pool.get('condo.payment')
         payment = Payment.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         has_payments = dict.fromkeys([m.id for m in mandates], False)
 

@@ -29,8 +29,7 @@ from trytond.transaction import Transaction
 __all__ = ['Party']
 
 
-class Party:
-    __metaclass__ = PoolMeta
+class Party(metaclass=PoolMeta):
     __name__ = 'party.party'
     companies = fields.One2Many('company.company', 'party', 'Companies')
     sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'party',
@@ -46,7 +45,7 @@ class Party:
         #Cancel party's mandates on party deactivate
         if (self.id > 0) and not self.active:
             mandates = Pool().get('condo.payment.sepa.mandate').__table__()
-            cursor = Transaction().cursor
+            cursor = Transaction().connection.cursor()
 
             cursor.execute(*mandates.select(mandates.id,
                                         where=(mandates.party == self.id) &
