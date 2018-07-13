@@ -39,14 +39,10 @@ class CondoParty:
                      [
                          ('company', '=', Eval('company')),
                      ],[]),
-                If(Bool(Eval('active')),
-                     [
-                         ('state', 'not in', ['canceled'])
-                     ],[]),
+                     ('state', 'not in', ['canceled']),
                ],
-        ondelete='SET NULL', states={
-            'readonly': ~Eval('active')
-            })
+        ondelete='SET NULL',
+        )
 
     @classmethod
     def validate(cls, condoparties):
@@ -55,7 +51,7 @@ class CondoParty:
             condoparty.unique_role_and_has_mandate()
 
     def unique_role_and_has_mandate(self):
-        if self.sepa_mandate and self.active:
+        if self.sepa_mandate:
             condoparties = Pool().get('condo.party').__table__()
             cursor = Transaction().cursor
 
@@ -63,7 +59,6 @@ class CondoParty:
                                  condoparties.id,
                                  where=(condoparties.unit == self.unit.id) &
                                        (condoparties.role == self.role) &
-                                       (condoparties.active == True) &
                                        (condoparties.sepa_mandate != None)))
 
             ids = [ids for (ids,) in cursor.fetchall()]
