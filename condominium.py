@@ -38,7 +38,7 @@ class CondoParty(metaclass=PoolMeta):
                      [
                          ('company', '=', Eval('company')),
                      ],[]),
-                ('state', 'not in', ['canceled'])
+                ('state', 'not in', ['canceled']),
                ],
         ondelete='SET NULL',
         )
