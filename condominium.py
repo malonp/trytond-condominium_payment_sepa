@@ -34,12 +34,12 @@ class CondoParty:
     __name__ = 'condo.party'
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
-        depends=['active', 'company'],
+        depends=['company'],
         domain=[If(Bool(Eval('company')),
                      [
                          ('company', '=', Eval('company')),
                      ],[]),
-                     ('state', 'not in', ['canceled']),
+                ('state', 'not in', ['canceled']),
                ],
         ondelete='SET NULL',
         )
