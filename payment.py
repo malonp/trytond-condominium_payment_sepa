@@ -26,7 +26,7 @@ from itertools import groupby, chain
 
 import genshi
 import genshi.template
-from sql import Literal
+from sql import Column, Literal
 from sql.aggregate import Count, Max
 
 from trytond.pool import Pool
@@ -476,15 +476,19 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                                  where=table1.state != 'draft')
             return [('id', 'in', query)]
 
-    @staticmethod
-    def order_company(tables):
+    @classmethod
+    def order_company(cls, tables):
         table, _ = tables[None]
-        return [table.company, table.date]
+        return chain.from_iterable([ cls.company.convert_order('company.party.name', tables, cls),
+                                     [Column(table, 'date')],
+                                   ])
 
-    @staticmethod
-    def order_reference(tables):
+    @classmethod
+    def order_reference(cls, tables):
         table, _ = tables[None]
-        return [table.reference, table.company]
+        return chain.from_iterable([ [Column(table, 'reference')],
+                                     cls.company.convert_order('company.party.name', tables, cls),
+                                   ])
 
 
 class CondoPayment(Workflow, ModelSQL, ModelView):
@@ -750,8 +754,9 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def order_unit_name(cls, tables):
-        return chain.from_iterable([cls.unit.convert_order('unit', tables, cls),
-                cls.company.convert_order('company', tables, cls)])
+        return chain.from_iterable([ cls.unit.convert_order('unit.name', tables, cls),
+                                     cls.unit.convert_order('unit.company.party.name', tables, cls)
+                                   ])
 
     @classmethod
     def get_company(cls, condopayments, name):
@@ -777,35 +782,11 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
         return [('id', 'in', query)]
 
-    @staticmethod
-    def order_company(tables):
-        pool = Pool()
-        PaymentGroup = pool.get('condo.payment.group')
-
-        field1 = PaymentGroup._fields['company']
-        table, _ = tables[None]
-        pgroup = PaymentGroup.__table__()
-
-        order_tables1 = tables.get('group')
-        if order_tables1 is None:
-            order_tables1 = {
-                    None: (pgroup, pgroup.id == table.group),
-                    }
-            tables['group'] = order_tables1
-
-        Unit = pool.get('condo.unit')
-        field2 = Unit._fields['name']
-        unit = Unit.__table__()
-
-        order_tables2 = tables.get('unit')
-        if order_tables2 is None:
-            order_tables2 = {
-                    None: (unit, unit.id == table.unit),
-                    }
-            tables['unit'] = order_tables2
-
-        return chain.from_iterable([field1.convert_order('company', order_tables1, PaymentGroup),
-                                    field2.convert_order('name', order_tables2, Unit)])
+    @classmethod
+    def order_company(cls, tables):
+        return chain.from_iterable([ cls.unit.convert_order('unit.company.party.name', tables, cls),
+                                     cls.unit.convert_order('unit.name', tables, cls)
+                                   ])
 
     @classmethod
     def get_debtor(cls, condopayments, name):
@@ -832,21 +813,9 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
         return [('id', 'in', query)]
 
-    @staticmethod
-    def order_debtor(tables):
-        pool = Pool()
-        Mandate = pool.get('condo.payment.sepa.mandate')
-
-        field = Mandate._fields['party']
-        table, _ = tables[None]
-        mandate = Mandate.__table__()
-
-        order_tables = {
-                None: (mandate, mandate.id == table.sepa_mandate),
-                }
-        tables['sepa_mandate'] = order_tables
-
-        return field.convert_order('party', order_tables, Mandate)
+    @classmethod
+    def order_debtor(cls, tables):
+        return cls.sepa_mandate.convert_order('sepa_mandate.party.name', tables, cls)
 
     @property
     def sequence_type(self):
@@ -1048,10 +1017,12 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         return [('identification',) + tuple(clause[1:])
             ]
 
-    @staticmethod
-    def order_company(tables):
+    @classmethod
+    def order_company(cls, tables):
         table, _ = tables[None]
-        return [table.company, table.identification]
+        return chain.from_iterable([ cls.company.convert_order('company.party.name', tables, cls),
+                                     [Column(table, 'identification')],
+                                   ])
 
     @classmethod
     def validate(cls, mandates):
