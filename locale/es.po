@@ -208,7 +208,7 @@ msgstr "Tercero"
 
 msgctxt "field:condo.payment.sepa.mandate,condoparties:"
 msgid "Parties"
-msgstr "Partícipes"
+msgstr "Terceros"
 
 msgctxt "field:condo.payment.sepa.mandate,account_number:"
 msgid "Account Number"
@@ -563,7 +563,7 @@ msgstr "Facturaciones"
 
 msgctxt "model:ir.ui.menu,name:menu_payment_pain_form"
 msgid "SDD Messages"
-msgstr "Mensajes SDD"
+msgstr "Ficheros SEPA"
 
 
 msgctxt "model:ir.ui.menu,name:menu_payment_configuration_form"
