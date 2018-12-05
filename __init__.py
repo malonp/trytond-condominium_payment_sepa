@@ -40,6 +40,7 @@ def register():
         CondoPayment,
         CondoMandateConfiguration,
         CondoPaymentGroupConfiguration,
+        CheckCondoMandatesList,
         BankAccount,
         BankAccountNumber,
         Party,
@@ -48,3 +49,6 @@ def register():
     Pool.register(
         CondoMandateReport,
         module='condominium_payment_sepa', type_='report')
+    Pool.register(
+        CheckCondoMandates,
+        module='condominium_payment_sepa', type_='wizard')

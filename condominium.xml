@@ -17,6 +17,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">unit_form</field>
         </record>
 
+        <record model="ir.ui.view" id="check_mandates_unused_result">
+            <field name="model">condo.check_mandates_unused.result</field>
+            <field name="type">form</field>
+            <field name="name">check_mandates_unused_result</field>
+        </record>
+
 <!-- Inherit List View -->
         <record model="ir.ui.view" id="condoparty_view_tree">
             <field name="model">condo.party</field>
@@ -31,6 +37,18 @@ this repository contains the full copyright notices and license terms. -->
         </record>
 
 <!-- Actions -->
+
+        <record model="ir.action.wizard" id="wizard_check_mandates_unused">
+            <field name="name">Check Mandates List</field>
+            <field name="wiz_name">condo.check_mandates_unused</field>
+            <field name="model">company.company</field>
+        </record>
+
+        <record model="ir.action.keyword" id="check_mandates_unused_keyword">
+            <field name="keyword">form_action</field>
+            <field name="model">company.company,-1</field>
+            <field name="action" ref="wizard_check_mandates_unused"/>
+        </record>
 
 <!-- Menu Item -->
 

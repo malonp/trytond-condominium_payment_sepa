@@ -8,6 +8,5 @@ this repository contains the full copyright notices and license terms. -->
         <newline/>
         <label name="sepa_mandate"/>
         <field name="sepa_mandate" colspan="9"/>
-        <newline/>
     </xpath>
 </data>

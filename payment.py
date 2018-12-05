@@ -39,7 +39,8 @@ from trytond.modules.company import CompanyReport
 
 
 __all__ = ['CondoPain', 'CondoPaymentGroup',
-           'CondoPayment', 'CondoMandate', 'CondoMandateReport']
+           'CondoPayment', 'CondoMandate', 'CondoMandateReport',
+           ]
 
 
 class CondoPain(Workflow, ModelSQL, ModelView):

@@ -20,13 +20,16 @@
 ##############################################################################
 
 
-from trytond.model import fields
+from trytond.model import fields, ModelView
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, If, Bool
 from trytond.transaction import Transaction
+from trytond.wizard import Wizard, StateTransition, StateView, Button
 
 
-__all__ = ['CondoParty', 'Unit']
+__all__ = ['CondoParty', 'Unit',
+           'CheckCondoMandatesList', 'CheckCondoMandates',
+          ]
 
 
 class CondoParty(metaclass=PoolMeta):
@@ -69,3 +72,50 @@ class CondoParty(metaclass=PoolMeta):
 class Unit(metaclass=PoolMeta):
     __name__ = 'condo.unit'
     payments = fields.One2Many( 'condo.payment', 'unit', 'Payments')
+
+
+class CheckCondoMandatesList(ModelView):
+    'Check Mandates List'
+    __name__ = 'condo.check_mandates_unused.result'
+    mandates_unused = fields.Many2Many('condo.payment.sepa.mandate', None, None,
+        'Mandates not used', readonly=True)
+
+
+class CheckCondoMandates(Wizard):
+    'Check Mandates List'
+    __name__ = 'condo.check_mandates_unused'
+    start_state = 'check'
+
+    check = StateTransition()
+    result = StateView('condo.check_mandates_unused.result',
+        'condominium_payment_sepa.check_mandates_unused_result', [
+            Button('OK', 'end', 'tryton-ok', True),
+            ])
+
+    def transition_check(self):
+
+        pool = Pool()
+        CondoMandate = pool.get('condo.payment.sepa.mandate')
+
+        mandates_unused = []
+
+        mandates = CondoMandate.search_read([
+                        'AND', [
+                                'OR', [
+                                        ('company', 'in', Transaction().context.get('active_ids')),
+                                    ],[
+                                        ('company.parent', 'child_of', Transaction().context.get('active_ids')),
+                                    ]
+                            ],[
+                                ('state', 'not in', ('canceled',)),
+                                ('condoparties', '=', None),
+                            ],
+                ], fields_names=['id'])
+
+        self.result.mandates_unused = [r['id'] for r in mandates]
+        return 'result'
+
+    def default_result(self, fields):
+        return {
+            'mandates_unused': [p.id for p in self.result.mandates_unused],
+            }
