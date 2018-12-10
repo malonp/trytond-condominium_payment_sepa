@@ -76,28 +76,29 @@ class Unit(metaclass=PoolMeta):
 
 class CheckCondoMandatesList(ModelView):
     'Check Mandates List'
-    __name__ = 'condo.check_mandates_unused.result'
-    mandates_unused = fields.Many2Many('condo.payment.sepa.mandate', None, None,
+    __name__ = 'condo.check_mandates.result'
+    mandates = fields.Many2Many('condo.payment.sepa.mandate', None, None,
         'Mandates not used', readonly=True)
+    units = fields.Many2Many('condo.unit', None, None,
+        'Units without mandates', readonly=True)
 
 
 class CheckCondoMandates(Wizard):
     'Check Mandates List'
-    __name__ = 'condo.check_mandates_unused'
+    __name__ = 'condo.check_mandates'
     start_state = 'check'
 
     check = StateTransition()
-    result = StateView('condo.check_mandates_unused.result',
-        'condominium_payment_sepa.check_mandates_unused_result', [
+    result = StateView('condo.check_mandates.result',
+        'condominium_payment_sepa.check_mandates_result', [
             Button('OK', 'end', 'tryton-ok', True),
             ])
 
     def transition_check(self):
 
         pool = Pool()
+        CondoUnit = pool.get('condo.unit')
         CondoMandate = pool.get('condo.payment.sepa.mandate')
-
-        mandates_unused = []
 
         mandates = CondoMandate.search_read([
                         'AND', [
@@ -112,10 +113,32 @@ class CheckCondoMandates(Wizard):
                             ],
                 ], fields_names=['id'])
 
-        self.result.mandates_unused = [r['id'] for r in mandates]
+        units = CondoUnit.search_read([
+                        'OR', [
+                                ('company', 'in', Transaction().context.get('active_ids')),
+                            ],[
+                                ('company.parent', 'child_of', Transaction().context.get('active_ids')),
+                            ],
+                ], fields_names=['id'])
+
+        units_with_mandate = CondoUnit.search_read([
+                        'AND', [
+                                'OR', [
+                                        ('company', 'in', Transaction().context.get('active_ids')),
+                                    ],[
+                                        ('company.parent', 'child_of', Transaction().context.get('active_ids')),
+                                    ]
+                            ],[
+                                ('parties.sepa_mandate', '!=', None),
+                            ],
+                ], fields_names=['id'])
+
+        self.result.mandates = [r['id'] for r in mandates]
+        self.result.units = [r['id'] for r in units if r not in units_with_mandate]
         return 'result'
 
     def default_result(self, fields):
         return {
-            'mandates_unused': [p.id for p in self.result.mandates_unused],
+            'mandates': [p.id for p in self.result.mandates],
+            'units': [p.id for p in self.result.units],
             }

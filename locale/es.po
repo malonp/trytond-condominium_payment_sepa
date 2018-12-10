@@ -28,22 +28,26 @@ msgid "Code used in the SEPA Creditor Identifier"
 msgstr "Código utilizado en la obtención del identificador del acreedor (AT-02)"
 
 
-msgctxt "field:condo.check_mandates_unused.result,mandates_unused:"
+msgctxt "field:condo.check_mandates.result,mandates:"
 msgid "Mandates not used"
 msgstr "Domiciliaciones sin utilizar"
 
+msgctxt "field:condo.check_mandates.result,units:"
+msgid "Units without mandates"
+msgstr "Inmuebles sin domiciliación"
 
-msgctxt "view:condo.check_mandates_unused.result:"
+
+msgctxt "view:condo.check_mandates.result:"
 msgid "Check Mandates"
 msgstr "Comprobar Domiciliaciones"
 
 
-msgctxt "model:ir.action,name:wizard_check_mandates_unused"
+msgctxt "model:ir.action,name:wizard_check_mandates"
 msgid "Check Mandates List"
 msgstr "Comprobar Domiciliaciones"
 
 
-msgctxt "wizard_button:condo.check_mandates_unused,result,end:"
+msgctxt "wizard_button:condo.check_mandates,result,end:"
 msgid "OK"
 msgstr "Aceptar"
 
