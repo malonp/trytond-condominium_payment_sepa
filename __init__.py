@@ -51,4 +51,5 @@ def register():
         module='condominium_payment_sepa', type_='report')
     Pool.register(
         CheckCondoMandates,
+        PartyReplace,
         module='condominium_payment_sepa', type_='wizard')
