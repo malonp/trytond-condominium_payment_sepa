@@ -61,7 +61,7 @@ class Company(metaclass=PoolMeta):
 
     @staticmethod
     def default_creditor_business_code():
-        return 'ZZZ'
+        return '000'
 
     @classmethod
     def validate(cls, companies):
