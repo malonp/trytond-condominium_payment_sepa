@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+
+<!-- Create the icon -->
+
+<!-- Inherit Form View -->
+        <record model="ir.ui.view" id="bank_view_form">
+            <field name="model">bank</field>
+            <field name="inherit" ref="bank.bank_view_form"/>
+            <field name="name">bank_form</field>
+        </record>
+
+<!-- Inherit List View -->
+        <record model="ir.ui.view" id="bank_view_list">
+            <field name="model">bank</field>
+            <field name="inherit" ref="bank.bank_view_list"/>
+            <field name="name">bank_list</field>
+        </record>
+
+    </data>
+</tryton>

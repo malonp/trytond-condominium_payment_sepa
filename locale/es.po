@@ -2,6 +2,22 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
+msgctxt "field:bank,subset:"
+msgid "ASCII ISO20022"
+msgstr "ASCII ISO20022"
+
+msgctxt "field:bank,country_subset:"
+msgid "Extended Character Set"
+msgstr "Conjunto Extendido de Caracteres"
+
+msgctxt "help:bank,subset:"
+msgid "Use Unicode Character Subset defined in ISO20022 for SEPA schemes"
+msgstr "Utilizar el subconjuto de caracteres restringidos en ISO20022"
+
+msgctxt "help:bank,country_subset:"
+msgid "Country Extended Character Set"
+msgstr "Extension del conjunto de caracteres nacionales"
+
 
 msgctxt "field:bank.account.number,mandates:"
 msgid "Mandates"
@@ -105,6 +121,22 @@ msgstr "Suma de Control"
 msgctxt "field:condo.payment.pain,state:"
 msgid "State"
 msgstr "Estado"
+
+msgctxt "field:condo.payment.pain,subset:"
+msgid "ASCII ISO20022"
+msgstr "ASCII ISO20022"
+
+msgctxt "field:condo.payment.pain,country_subset:"
+msgid "Extended Character Set"
+msgstr "Conjunto Extendido de Caracteres"
+
+msgctxt "help:condo.payment.pain,subset:"
+msgid "Use Unicode Character Subset defined in ISO20022 for SEPA schemes"
+msgstr "Utilizar el subconjuto de caracteres restringidos en ISO20022"
+
+msgctxt "help:condo.payment.pain,country_subset:"
+msgid "Country Extended Character Set"
+msgstr "Extension del conjunto de caracteres nacionales"
 
 
 msgctxt "field:condo.payment.group,reference:"
@@ -706,6 +738,14 @@ msgstr "No se puede anular la domiciliación \"%s\".\nHay %s recibos en borrador
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "Mandate \"%s\" will be canceled as mean of payment in %d unit(s)/apartment(s)!"
 msgstr "La domiciliacion \"%s\" será cancelada como medio de pago en %d inmueble(s)!"
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "Mandate Identification can't contain 2 consecutive '/'"
+msgstr "El campo de identificación no debe contener 2 '/' consecutivos"
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "Mandate Identification can't start or end with '/' character"
+msgstr "El campo de identificación no debe comenzar o acabar con el caracter '/'"
 
 msgctxt "error:party.party:"
 msgid "%d mandate(s) of this party will be canceled!"

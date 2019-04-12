@@ -22,11 +22,31 @@
 
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
+from trytond.pyson import Eval, Not, Bool
 from trytond.tools import reduce_ids, grouped_slice
 from trytond.transaction import Transaction
 
-__all__ = ['BankAccount', 'BankAccountNumber']
+from . import sepadecode
+EPC_COUNTRIES = list(sepadecode._countries)
 
+
+__all__ = ['Bank', 'BankAccount', 'BankAccountNumber']
+
+
+class Bank(metaclass=PoolMeta):
+    __name__ = 'bank'
+    subset = fields.Boolean('ASCII ISO20022',
+            help=('Use Unicode Character Subset defined in ISO20022 for SEPA schemes'))
+    country_subset = fields.Many2One('country.country', 'Extended Character Set',
+            domain=[('code', 'in', EPC_COUNTRIES),],
+            help=('Country Extended Character Set'),
+            states={
+                'invisible': Not(Bool(Eval('subset'))),
+            })
+
+    @staticmethod
+    def default_subset():
+        return False
 
 class BankAccount(metaclass=PoolMeta):
     __name__ = 'bank.account'

@@ -41,6 +41,7 @@ def register():
         CondoMandateConfiguration,
         CondoPaymentGroupConfiguration,
         CheckCondoMandatesList,
+        Bank,
         BankAccount,
         BankAccountNumber,
         Party,

@@ -36,12 +36,9 @@ class CondoParty(metaclass=PoolMeta):
     __name__ = 'condo.party'
     sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
         help="SEPA Mandate of this party for the unit",
-        depends=['company'],
-        domain=[If(Bool(Eval('company')),
-                     [
-                         ('company', '=', Eval('company')),
-                     ],[]),
-                ('state', 'not in', ['canceled']),
+        depends=['company', 'state'],
+        domain=[ If(Bool(Eval('company')), [('company', '=', Eval('company')),], []),
+                 ('state', 'not in', ['canceled']),
                ],
         ondelete='SET NULL',
         )
