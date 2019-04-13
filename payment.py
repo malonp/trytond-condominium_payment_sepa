@@ -55,7 +55,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
             },
         depends=['state'])
     bank = fields.Function(fields.Many2One('bank', 'Creditor Agent'),
-        'on_change_with_bank', depends=['groups'])
+        'on_change_with_bank')
     company = fields.Many2One('company.company', 'Initiating Party',
         domain=[
                 ('party.active', '=', True),
