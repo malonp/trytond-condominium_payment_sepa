@@ -57,9 +57,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
     bank = fields.Function(fields.Many2One('bank', 'Creditor Agent'),
         'on_change_with_bank')
     company = fields.Many2One('company.company', 'Initiating Party',
-        domain=[
-                ('party.active', '=', True),
-               ],
+        domain=[('party.active', '=', True),],
         select=True, required=True,
         states={
             'readonly': Eval('state') != 'draft',
@@ -84,7 +82,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
-        depends=['company', 'bank', 'state'])
+        depends=['bank', 'company', 'state'])
     message = fields.Text('Message',
         states={
             'readonly': Eval('state') != 'draft',
@@ -686,13 +684,11 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                     'icon': 'tryton-launch',
                     },
                 'succeed': {
-                    'invisible': ~Eval('state').in_(
-                        ['processing', 'failed']),
+                    'invisible': ~Eval('state').in_(['processing', 'failed']),
                     'icon': 'tryton-ok',
                     },
                 'fail': {
-                    'invisible': ~Eval('state').in_(
-                        ['processing', 'succeeded']),
+                    'invisible': ~Eval('state').in_(['processing', 'succeeded']),
                     'icon': 'tryton-cancel',
                     },
                 })
@@ -928,10 +924,8 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
     __name__ = 'condo.payment.sepa.mandate'
     company = fields.Many2One('company.company', 'Condominium', required=True,
         select=True,
-        domain=[
-                ('party.active', '=', True),
-                ('is_Condominium', '=', True)
-               ],
+        domain=[('party.active', '=', True),
+                ('is_Condominium', '=', True)],
         states={
             'readonly': Eval('state') != 'draft',
             },
@@ -949,13 +943,11 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
             'readonly': Eval('state') == 'canceled',
             'required': Eval('state') == 'validated',
             },
-        domain=[
-                ('type', '=', 'iban'),
+        domain=[('type', '=', 'iban'),
                 If(Bool(Eval('state') == 'canceled'),
                     ['OR', ('account.active', '=', True), ('account.active', '=', False),],
                     [('account.active', '=', True),],),
-                If(Bool(Eval('party')), [('account.owners', '=', Eval('party')),], []),
-               ],
+                If(Bool(Eval('party')), [('account.owners', '=', Eval('party')),], []),],
         depends=['state', 'party'])
     identification = fields.Char('Identification', size=35,
         states={
@@ -1010,8 +1002,8 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                 ))
         cls._buttons.update({
                 'cancel': {
-                    'invisible': ~Eval('state').in_(
-                        ['requested', 'validated']),
+                    'invisible': ~Eval('state').in_(['requested', 'validated']),
+                    'icon': 'tryton-cancel',
                     },
                 'draft': {
                     'invisible': Eval('state') != 'requested',
@@ -1021,6 +1013,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                     },
                 'validate_mandate': {
                     'invisible': Eval('state') != 'requested',
+                    'icon': 'tryton-ok',
                     },
                 })
         cls._sql_constraints = [
