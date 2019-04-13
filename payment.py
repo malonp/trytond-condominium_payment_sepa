@@ -54,6 +54,8 @@ class CondoPain(Workflow, ModelSQL, ModelView):
             'readonly': Eval('state') != 'draft',
             },
         depends=['state'])
+    bank = fields.Function(fields.Many2One('bank', 'Creditor Agent'),
+        'on_change_with_bank', depends=['groups'])
     company = fields.Many2One('company.company', 'Initiating Party',
         domain=[
                 ('party.active', '=', True),
@@ -75,18 +77,14 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         depends=['state'],
         translate=False)
     groups = fields.One2Many('condo.payment.group', 'pain', 'Payments Groups',
-        add_remove=['OR',
-                        [   ('pain', '=', None),
-                            If(Bool(Eval('company')),
-                                ['OR', ('company', '=', Eval('company')), ('company.parent', 'child_of', Eval('company'))],
-                                []),
-                        ],
-                        ('pain', '=', Eval('id', -1)),
-                   ],
+        add_remove=[('OR', [('pain', '=', None),
+                        If(Bool(Eval('company')), ['OR', ('company', '=', Eval('company')), ('company.parent', 'child_of', Eval('company'))], []),],
+                        ('pain', '=', Eval('id', -1)),),
+                    If(Bool(Eval('bank')), [('account_number.account.bank', '=', Eval('bank'))], []),],     #Implies one unique Agent Creditor (bank) per message
         states={
             'readonly': Eval('state') != 'draft',
             },
-        depends=['company', 'state'])
+        depends=['company', 'bank', 'state'])
     message = fields.Text('Message',
         states={
             'readonly': Eval('state') != 'draft',
@@ -176,10 +174,32 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         return False
 
     @fields.depends('groups')
+    def on_change_with_bank(self, name=None):
+        if self.groups:
+            bank = None
+            for g in self.groups:
+                if not bank:
+                    bank = g.account_number.account.bank.id
+                elif bank != g.account_number.account.bank.id:
+                    bank = None
+                    break
+            return bank
+
+    @fields.depends('groups')
     def on_change_groups(self):
         if self.groups:
-            self.subset = self.groups[0].account_number.account.bank.subset
-            self.country_subset = self.groups[0].account_number.account.bank.country_subset
+            bank = None
+            for g in self.groups:
+                if not bank:
+                    bank = g.account_number.account.bank
+                elif bank.id != g.account_number.account.bank.id:
+                    bank = None
+                    break
+
+            if bank:
+                self.bank = bank
+                self.subset = bank.subset
+                self.country_subset = bank.country_subset
 
     def get_nboftxs(self, name):
         if self.groups:
