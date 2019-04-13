@@ -520,8 +520,11 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         ondelete='RESTRICT', required=True,
         domain=[ If(Eval('state') == 'draft',
                     [('OR', ('pain', '=', None), ('pain.state' ,'=', 'draft')),
-                     (If(Bool(Eval('sepa_mandate')), [('company.sepa_mandates', '=', Eval('sepa_mandate'))], [])),
-                     (If(Bool(Eval('unit')), [('company.condo_units', '=', Eval('unit'))], [])),],
+                     If(Bool(Eval('company')),                                                                              #defined at least one of 'sepa_mandate', 'unit'
+                        [('company.parent', 'parent_of', Eval('company')),],
+                        [If(Bool(Eval('unit')), [('company.condo_units', '=', Eval('unit')),], []),]),                      #should not happend
+                     #If(Bool(Eval('party')), [('company.condo_units.parties.party', '=', Eval('party'))], []),             #can't catch group of parents (TODO)
+                     If(Bool(Eval('sepa_mandate')), [('company.sepa_mandates', '=', Eval('sepa_mandate'))], []),],          #sepa_mandate => group
                     []),
                ],
         states={
@@ -532,10 +535,11 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
     unit = fields.Many2One('condo.unit', 'Unit',
         domain=[ If(Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
                     [],
-                    [   If(Bool(Eval('group')), [('company.groups_payments', '=', Eval('group')),], []),
-                        If(Bool(Eval('party')), [('parties.party', '=', Eval('party')),], []),
-                        If(Bool(Eval('sepa_mandate')), [('company.sepa_mandates', '=', Eval('sepa_mandate')),], []),
-                    ]),
+                    [If(Bool(Eval('company')),                                                                              #defined at least one of 'group', 'sepa_mandate'
+                        ['OR', ('company', '=', Eval('company')), ('company.parent', 'child_of', Eval('company')),],
+                        [If(Bool(Eval('group')), [('company.groups_payments', '=', Eval('group')),], []),                   #should not happend
+                         If(Bool(Eval('sepa_mandate')), [('company.sepa_mandates', '=', Eval('sepa_mandate')),], []),]),    #should not happend
+                     If(Bool(Eval('party')), [('parties.party', '=', Eval('party')),], []),]),                              #party => unit
                ],
         states={
             'readonly': Eval('state') != 'draft',
@@ -548,12 +552,13 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                     [],
                     [   #'company' is function field so this won't work unless define method on_change_with_company
                         # that client will call when user changes one of the fields defined in the list @fields.depends
-                        If(Bool(Eval('company')), [('units.sepa_mandate.company', '=', Eval('company')),], []),
-                        If(Bool(Eval('group')), [('units.sepa_mandate.company.groups_payments', '=', Eval('group')),], []),
-                        If(Bool(Eval('unit')),
+                        If(Bool(Eval('company')),                                                                                                               #defined at least one of 'group', 'sepa_mandate', 'unit'
+                            ['OR', ('units.sepa_mandate.company', '=', Eval('company')), ('units.sepa_mandate.company.parent', 'child_of', Eval('company'))],
+                            [If(Bool(Eval('group')), [('units.sepa_mandate.company.groups_payments', '=', Eval('group')),], []),                                #should not happend
+                             If(Bool(Eval('sepa_mandate')), [('sepa_mandates.company.sepa_mandates', '=', Eval('sepa_mandate'))], []),]),                       #should not happend
+                        If(Bool(Eval('unit')),                                                                                                                  #unit => party
                             [('units.unit', '=', Eval('unit')), ('units.sepa_mandate.state', 'not in', ['draft', 'canceled']),],
-                            []),
-                    ]),
+                            []),]),
                ],
         states={
             'readonly': Eval('state') != 'draft',
@@ -580,15 +585,12 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         ondelete='RESTRICT', required=True,
         domain=[ If(Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
                      [],
-                     [
-                        If(Bool(Eval('group')), [('company.groups_payments', '=', Eval('group')),], []),
-                        If(Bool(Eval('party')),
-                            [ If(Bool(Eval('unit')), [('condoparties.party', '=', Eval('party')),], [('party', '=', Eval('party')),])],
-                            []
-                        ),
-                        If(Bool(Eval('unit')), [('company.condo_units', '=', Eval('unit')),], []),
-                        ('state', 'not in', ['draft', 'canceled']),
-                     ]),
+                     [If(Bool(Eval('company')),                                                                 #defined at least one of 'group', 'unit'
+                        [('company.parent', 'parent_of', Eval('company')),],
+                        [If(Bool(Eval('unit')), [('company.condo_units', '=', Eval('unit')),], []),]),          #should not happend
+                      #If(Bool(Eval('party')), [('company.condo_units.parties.party', '=', Eval('party'))], []),#can't catch sepa_mandates of parents (TODO)
+                      If(Bool(Eval('group')), [('company.groups_payments', '=', Eval('group')),], []),          #group => sepa_mandate
+                      ('state', 'not in', ['draft', 'canceled']),]),
                ],
         states={
             'readonly': Eval('state') != 'draft',
@@ -659,6 +661,9 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                 'approve': {
                     'invisible': Eval('state') != 'draft',
                     'icon': 'tryton-forward',
+                    },
+                'processing': {
+                    'icon': 'tryton-launch',
                     },
                 'succeed': {
                     'invisible': ~Eval('state').in_(
