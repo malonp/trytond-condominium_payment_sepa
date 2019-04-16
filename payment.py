@@ -517,8 +517,8 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                     # If(Bool(Eval('party')), [('company.condo_units.parties.party', '=', Eval('party'))], []),
                     # sepa_mandate => group
                     If(Bool(Eval('sepa_mandate')), [('company.sepa_mandates', '=', Eval('sepa_mandate'))], []),
-                    #restrict groups from condominiums with actives mandates
-                    ('company.condo_units.parties.party.units.sepa_mandate.state', 'not in', ['draft', 'canceled']),
+                    # restrict groups from condominiums with actives mandates
+                    ('company.sepa_mandates.state', 'not in', ['draft', 'canceled']),
                 ],
                 [],
             )
@@ -545,7 +545,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                     ),
                     # party => unit
                     If(Bool(Eval('party')), [('parties.party', '=', Eval('party'))], []),
-                    #restrict to units with parties with actives mandates
+                    # restrict to units with parties with actives mandates
                     ('parties.party.units.sepa_mandate.state', 'not in', ['draft', 'canceled']),
                 ],
             )
@@ -577,7 +577,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                     ),
                     # unit => party
                     If(Bool(Eval('unit')), [('units.unit', '=', Eval('unit'))], []),
-                    #restrict to parties with actives mandates
+                    # restrict to parties with actives mandates
                     ('units.sepa_mandate.state', 'not in', ['draft', 'canceled']),
                 ],
             )
