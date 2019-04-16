@@ -676,10 +676,6 @@ msgid "The reference must be unique for each condominium!"
 msgstr "La referencia debe ser unica para cada comunidad"
 
 msgctxt "error:condo.payment.group:"
-msgid "PaymentGroup \"%s\" is in readonly state"
-msgstr "La facturacion \"%s\" esta en modo de solo lectura"
-
-msgctxt "error:condo.payment.group:"
 msgid "PaymentGroup \"%s\" has payments approved with earlier date."
 msgstr "La facturacion \"%s\" tiene recibos aprobados con fecha anterior a la especificada"
 
@@ -698,10 +694,6 @@ msgstr "La Comunidad de Propietarios debe tener una identificación del acreedor
 msgctxt "error:condo.payment:"
 msgid "Payment \"%s\" must be in draft before deletion."
 msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
-
-msgctxt "error:condo.payment:"
-msgid "Payment of \"%s\" is not in draft state."
-msgstr "El recibo de \"%s\" no esta en estado borrador"
 
 msgctxt "error:condo.payment:"
 msgid "Payment of \"%s\" has an invalid mandate \"%s\""

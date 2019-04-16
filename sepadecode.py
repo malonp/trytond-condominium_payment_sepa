@@ -1035,11 +1035,12 @@ _records = [
     ('ў', 1118, '.', []),
     ('џ', 1119, '.', []),
     ('€', 8364, 'E', []),
-
 ]
+
 
 def _build_index(idx):
     return dict((r[idx], r) for r in _records)
+
 
 # Internal code point indexes
 _by_code = _build_index(1)
@@ -1047,14 +1048,15 @@ _by_code = _build_index(1)
 # Internal country list
 _countries = set([c for r in _records if r[3] for c in r[3]])
 
+
 def sepa_conversion(country: str, s: str) -> str:
     result = ''
     for c in s:
         if c in ' ()+,-./0123456789:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
             result += c
-        elif ord(c) >= int('0460',16) and ord(c) <= int('20ab',16):
+        elif ord(c) >= int('0460', 16) and ord(c) <= int('20ab', 16):
             result += '.'
-        elif ord(c) >= int('20ad',16):
+        elif ord(c) >= int('20ad', 16):
             result += '.'
         else:
             conversion = _by_code.get(ord(c))
