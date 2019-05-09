@@ -6,7 +6,7 @@ this repository contains the full copyright notices and license terms. -->
         expr="/form/field[@name='party']"
         position="after">
         <newline/>
-        <label name="sepa_mandate"/>
-        <field name="sepa_mandate" colspan="9"/>
+        <label name="mandate"/>
+        <field name="mandate" colspan="9"/>
     </xpath>
 </data>

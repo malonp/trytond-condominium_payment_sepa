@@ -76,7 +76,7 @@ class BankAccount(metaclass=PoolMeta):
             for id, identification in cursor.fetchall():
                 cursor.execute(
                     *condoparties.select(
-                        condoparties.id, where=(condoparties.sepa_mandate == id) & (condoparties.active == True)
+                        condoparties.id, where=(condoparties.mandate == id) & (condoparties.active == True)
                     )
                 )
 
@@ -96,7 +96,7 @@ class BankAccount(metaclass=PoolMeta):
                     for sub_ids in grouped_slice(ids):
                         red_sql = reduce_ids(condoparties.id, sub_ids)
                         cursor.execute(
-                            *condoparties.update(columns=[condoparties.sepa_mandate], values=[None], where=red_sql)
+                            *condoparties.update(columns=[condoparties.mandate], values=[None], where=red_sql)
                         )
 
 

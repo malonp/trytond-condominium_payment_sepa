@@ -32,22 +32,22 @@ from .payment import *
 
 def register():
     Pool.register(
-        Company,
-        CondoMandate,
-        CondoPain,
-        CondoParty,
-        CondoPaymentGroup,
-        CondoPayment,
-        CondoMandateConfiguration,
-        CondoPaymentGroupConfiguration,
-        CheckCondoMandatesList,
         Bank,
         BankAccount,
         BankAccountNumber,
+        CheckMandatesList,
+        Company,
+        CondoPain,
+        CondoParty,
+        Group,
+        GroupConfiguration,
+        Mandate,
+        MandateConfiguration,
         Party,
+        Payment,
         Unit,
         module='condominium_payment_sepa',
         type_='model',
     )
-    Pool.register(CondoMandateReport, module='condominium_payment_sepa', type_='report')
-    Pool.register(CheckCondoMandates, PartyReplace, module='condominium_payment_sepa', type_='wizard')
+    Pool.register(MandateReport, module='condominium_payment_sepa', type_='report')
+    Pool.register(CheckMandates, PartyReplace, module='condominium_payment_sepa', type_='wizard')

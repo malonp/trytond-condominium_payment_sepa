@@ -33,8 +33,8 @@ __all__ = ['Company']
 
 class Company(metaclass=PoolMeta):
     __name__ = 'company.company'
-    sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'company', 'SEPA Mandates')
-    groups_payments = fields.One2Many('condo.payment.group', 'company', 'Condominium Payment Group', readonly=True)
+    mandates = fields.One2Many('condo.payment.sepa.mandate', 'company', 'SEPA Mandates')
+    groups = fields.One2Many('condo.payment.group', 'company', 'Condominium Payment Group', readonly=True)
     creditor_business_code = fields.Char(
         'Creditor Business Code', size=3, help='Code used in the SEPA Creditor Identifier'
     )

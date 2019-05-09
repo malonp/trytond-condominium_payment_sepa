@@ -23,10 +23,10 @@
 from trytond.model import ModelView, ModelSQL, ModelSingleton, fields
 
 
-__all__ = ['CondoPaymentGroupConfiguration', 'CondoMandateConfiguration']
+__all__ = ['GroupConfiguration', 'MandateConfiguration']
 
 
-class CondoPaymentGroupConfiguration(ModelSingleton, ModelSQL, ModelView):
+class GroupConfiguration(ModelSingleton, ModelSQL, ModelView):
     'Condominium Payment Group Configuration'
     __name__ = 'condo.payment.group.configuration'
 
@@ -41,7 +41,7 @@ class CondoPaymentGroupConfiguration(ModelSingleton, ModelSQL, ModelView):
     )
 
 
-class CondoMandateConfiguration(ModelSingleton, ModelSQL, ModelView):
+class MandateConfiguration(ModelSingleton, ModelSQL, ModelView):
     'Condominium SEPA Mandate Configuration'
     __name__ = 'condo.payment.sepa.mandate.configuration'
 

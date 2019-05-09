@@ -5,6 +5,6 @@ this repository contains the full copyright notices and license terms. -->
     <xpath
         expr="/tree/field[@name='party']"
         position="after">
-        <field name="sepa_mandate"/>
+        <field name="mandate"/>
     </xpath>
 </data>

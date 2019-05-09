@@ -34,6 +34,7 @@ from trytond.model import ModelSQL, ModelView, Workflow, fields, dualmethod, Uni
 from trytond.pyson import Eval, If, Not, Bool
 from trytond.transaction import Transaction
 from trytond.tools import reduce_ids, grouped_slice
+from trytond.wizard import Wizard, StateTransition, StateView, Button
 
 from trytond.modules.company import CompanyReport
 
@@ -42,7 +43,27 @@ from . import sepadecode
 EPC_COUNTRIES = list(sepadecode._countries)
 
 
-__all__ = ['CondoPain', 'CondoPaymentGroup', 'CondoPayment', 'CondoMandate', 'CondoMandateReport']
+__all__ = ['CondoPain', 'Group', 'Payment', 'Mandate', 'MandateReport', 'CheckMandatesList', 'CheckMandates']
+
+# XXX fix: https://genshi.edgewall.org/ticket/582
+from genshi.template.astutil import ASTCodeGenerator, ASTTransformer
+
+if not hasattr(ASTCodeGenerator, 'visit_NameConstant'):
+
+    def visit_NameConstant(self, node):
+        if node.value is None:
+            self._write('None')
+        elif node.value is True:
+            self._write('True')
+        elif node.value is False:
+            self._write('False')
+        else:
+            raise Exception("Unknown NameConstant %r" % (node.value,))
+
+    ASTCodeGenerator.visit_NameConstant = visit_NameConstant
+if not hasattr(ASTTransformer, 'visit_NameConstant'):
+    # Re-use visit_Name because _clone is deleted
+    ASTTransformer.visit_NameConstant = ASTTransformer.visit_Name
 
 
 class CondoPain(Workflow, ModelSQL, ModelView):
@@ -211,7 +232,7 @@ class CondoPain(Workflow, ModelSQL, ModelView):
         key = (('date', payment.date),)
         key += (('group', payment.group),)
         key += (('sequence_type', payment.sequence_type),)
-        key += (('scheme', payment.sepa_mandate.scheme),)
+        key += (('scheme', payment.mandate.scheme),)
         return key
 
     @property
@@ -309,7 +330,7 @@ def remove_comment(stream):
 loader = genshi.template.TemplateLoader(os.path.join(os.path.dirname(__file__), 'template'), auto_reload=True)
 
 
-class CondoPaymentGroup(ModelSQL, ModelView):
+class Group(ModelSQL, ModelView):
     'Condominium Payment Group'
     __name__ = 'condo.payment.group'
     _rec_name = 'reference'
@@ -319,7 +340,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
     company = fields.Many2One(
         'company.company',
         'Condominium',
-        domain=[('party.active', '=', True), ('is_Condominium', '=', True)],
+        domain=[('party.active', '=', True), ('is_condo', '=', True)],
         select=True,
         required=True,
         states={'readonly': Eval('id', 0) > 0},
@@ -331,7 +352,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         ondelete='RESTRICT',
         domain=[
             If(Bool(Eval('company')), [('account.owners.companies', '=', Eval('company'))], []),
-            ('account.owners.companies.is_Condominium', '=', True),
+            ('account.owners.companies.is_condo', '=', True),
             If(Bool(Eval('readonly')), [], [('account.active', '=', True)]),
             ('type', '=', 'iban'),
         ],
@@ -358,7 +379,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
 
     @classmethod
     def __setup__(cls):
-        super(CondoPaymentGroup, cls).__setup__()
+        super(Group, cls).__setup__()
         t = cls.__table__()
         cls._sql_constraints += [
             (
@@ -388,18 +409,18 @@ class CondoPaymentGroup(ModelSQL, ModelView):
             return config.sepa_charge_bearer
 
     @classmethod
-    def validate(cls, paymentgroups):
-        super(CondoPaymentGroup, cls).validate(paymentgroups)
+    def validate(cls, groups):
+        super(Group, cls).validate(groups)
 
         payments = Pool().get('condo.payment').__table__()
 
-        for paymentgroup in paymentgroups:
-            if paymentgroup.readonly:
+        for group in groups:
+            if group.readonly:
                 continue
 
-            paymentgroup.check_today()
-            paymentgroup.check_businessdate()
-            paymentgroup.company_has_sepa_creditor_identifier()
+            group.check_today()
+            group.check_businessdate()
+            group.company_has_sepa_creditor_identifier()
 
             with Transaction().connection.cursor() as cursor:
                 # there are approved payments with due date before new date
@@ -407,22 +428,18 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                 cursor.execute(
                     *payments.select(
                         payments.id,
-                        where=(payments.group == paymentgroup.id)
-                        & (payments.date < paymentgroup.date)
-                        & (payments.state != 'draft'),
+                        where=(payments.group == group.id) & (payments.date < group.date) & (payments.state != 'draft'),
                     )
                 )
                 if cursor.fetchall():
-                    cls.raise_user_error('payments_approved', (paymentgroup.reference))
+                    cls.raise_user_error('payments_approved', (group.reference))
 
                 # there are drafted payments with due date before new date
                 # update date field of payments
                 cursor.execute(
                     *payments.select(
                         payments.id,
-                        where=(payments.group == paymentgroup.id)
-                        & (payments.date < paymentgroup.date)
-                        & (payments.state == 'draft'),
+                        where=(payments.group == group.id) & (payments.date < group.date) & (payments.state == 'draft'),
                     )
                 )
                 ids_draft = [ids for (ids,) in cursor.fetchall()]
@@ -431,9 +448,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
                     for sub_ids in grouped_slice(ids_draft):
                         red_sql = reduce_ids(payments.id, sub_ids)
                         # Use SQL to prevent double validate loop
-                        cursor.execute(
-                            *payments.update(columns=[payments.date], values=[paymentgroup.date], where=red_sql)
-                        )
+                        cursor.execute(*payments.update(columns=[payments.date], values=[group.date], where=red_sql))
 
     def check_today(self):
         if self.date:
@@ -498,7 +513,7 @@ class CondoPaymentGroup(ModelSQL, ModelView):
         )
 
 
-class CondoPayment(Workflow, ModelSQL, ModelView):
+class Payment(Workflow, ModelSQL, ModelView):
     'Condominium Payment'
     __name__ = 'condo.payment'
     group = fields.Many2One(
@@ -511,14 +526,14 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                 Eval('state') == 'draft',
                 [
                     ('OR', ('pain', '=', None), ('pain.state', '=', 'draft')),
-                    # company field implies at least one of 'sepa_mandate', 'unit' are defined
+                    # company field implies at least one of 'mandate', 'unit' are defined
                     If(Bool(Eval('company')), [('company.parent', 'parent_of', Eval('company'))], []),
                     # next one commented because can't catch group of parents (TODO)
-                    # If(Bool(Eval('party')), [('company.condo_units.parties.party', '=', Eval('party'))], []),
-                    # sepa_mandate => group
-                    If(Bool(Eval('sepa_mandate')), [('company.sepa_mandates', '=', Eval('sepa_mandate'))], []),
+                    # If(Bool(Eval('party')), [('company.units.condoparties.party', '=', Eval('party'))], []),
+                    # mandate => group
+                    If(Bool(Eval('mandate')), [('company.mandates', '=', Eval('mandate'))], []),
                     # restrict groups from condominiums with actives mandates
-                    ('company.sepa_mandates.state', 'not in', ['draft', 'canceled']),
+                    ('company.mandates.state', 'not in', ['draft', 'canceled']),
                 ],
                 [],
             )
@@ -537,21 +552,21 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                 Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
                 [],
                 [
-                    # company field implies at least one of 'group', 'sepa_mandate' are defined
+                    # company field implies at least one of 'group', 'mandate' are defined
                     If(
                         Bool(Eval('company')),
                         ['OR', ('company', '=', Eval('company')), ('company.parent', 'child_of', Eval('company'))],
                         [],
                     ),
                     # party => unit
-                    If(Bool(Eval('party')), [('parties.party', '=', Eval('party'))], []),
+                    If(Bool(Eval('party')), [('condoparties.party', '=', Eval('party'))], []),
                     # restrict to units with parties with actives mandates
-                    ('parties.party.units.sepa_mandate.state', 'not in', ['draft', 'canceled']),
+                    ('condoparties.party.units.mandate.state', 'not in', ['draft', 'canceled']),
                 ],
             )
         ],
         states={'readonly': Eval('state') != 'draft'},
-        depends=['group', 'party', 'sepa_mandate', 'state'],
+        depends=['group', 'party', 'mandate', 'state'],
     )
     unit_name = fields.Function(fields.Char('Unit'), getter='get_unit_name', searcher='search_unit_name')
     party = fields.Many2One(
@@ -565,20 +580,20 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                 [
                     # 'company' is function field so this won't work unless define method on_change_with_company
                     # that client will call when user changes one of the fields defined in the list @fields.depends
-                    # company field implies at least one of 'group', 'sepa_mandate', 'unit' are defined
+                    # company field implies at least one of 'group', 'mandate', 'unit' are defined
                     If(
                         Bool(Eval('company')),
                         [
                             'OR',
-                            ('units.sepa_mandate.company', '=', Eval('company')),
-                            ('units.sepa_mandate.company.parent', 'child_of', Eval('company')),
+                            ('units.mandate.company', '=', Eval('company')),
+                            ('units.mandate.company.parent', 'child_of', Eval('company')),
                         ],
                         [],
                     ),
                     # unit => party
                     If(Bool(Eval('unit')), [('units.unit', '=', Eval('unit'))], []),
                     # restrict to parties with actives mandates
-                    ('units.sepa_mandate.state', 'not in', ['draft', 'canceled']),
+                    ('units.mandate.state', 'not in', ['draft', 'canceled']),
                 ],
             )
         ],
@@ -596,7 +611,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         states={'readonly': Eval('state') != 'draft', 'required': Eval('state') != 'draft'},
         depends=['state', 'currency_digits'],
     )
-    sepa_mandate = fields.Many2One(
+    mandate = fields.Many2One(
         'condo.payment.sepa.mandate',
         'Mandate',
         ondelete='RESTRICT',
@@ -608,10 +623,10 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
                 [
                     # company field implies at least one of 'group', 'unit' are defined
                     If(Bool(Eval('company')), [('company.parent', 'parent_of', Eval('company'))], []),
-                    # Next one commented because can't catch sepa_mandates of parents (TODO)
-                    # If(Bool(Eval('party')), [('company.condo_units.parties.party', '=', Eval('party'))], []),
-                    # group => sepa_mandate
-                    If(Bool(Eval('group')), [('company.groups_payments', '=', Eval('group'))], []),
+                    # Next one commented because can't catch mandates of parents (TODO)
+                    # If(Bool(Eval('party')), [('company.units.condoparties.party', '=', Eval('party'))], []),
+                    # group => mandate
+                    If(Bool(Eval('group')), [('company.groups', '=', Eval('group'))], []),
                     ('state', 'not in', ['draft', 'canceled']),
                 ],
             )
@@ -625,13 +640,13 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         'Sequence Type',
         required=True,
         states={'readonly': Eval('state').in_(['processing', 'succeeded', 'failed'])},
-        depends=['sepa_mandate', 'state'],
+        depends=['mandate', 'state'],
     )
     sepa_end_to_end_id = fields.Char(
         'SEPA End To End ID',
         size=35,
         states={'readonly': Eval('state') != 'draft'},
-        depends=['unit', 'sepa_mandate', 'state'],
+        depends=['unit', 'mandate', 'state'],
     )
     date = fields.Date(
         'Debit Date', required=True, states={'readonly': Eval('state') != 'draft'}, depends=['group', 'state']
@@ -651,7 +666,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def __setup__(cls):
-        super(CondoPayment, cls).__setup__()
+        super(Payment, cls).__setup__()
         cls._order.insert(0, ('date', 'DESC'))
         cls._order.insert(1, ('unit.name', 'ASC'))
         cls._error_messages.update(
@@ -687,7 +702,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def validate(cls, payments):
-        super(CondoPayment, cls).validate(payments)
+        super(Payment, cls).validate(payments)
 
         for payment in payments:
             if payment.state == 'draft':
@@ -706,8 +721,8 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
             self.raise_user_error("Date must be a business day!")
 
     def check_account_number(self):
-        if not self.sepa_mandate.account_number:
-            self.raise_user_error('invalid_mandate', (self.party.name, self.sepa_mandate.identification))
+        if not self.mandate.account_number:
+            self.raise_user_error('invalid_mandate', (self.party.name, self.mandate.identification))
 
     def check_xml_characters(self):
         for f in [self.description, self.sepa_end_to_end_id]:
@@ -735,33 +750,33 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
             return self.group.company.currency.digits
         return 2
 
-    @fields.depends('sepa_mandate')
-    def on_change_sepa_mandate(self):
-        if self.sepa_mandate:
-            self.type = self.sepa_mandate.type
+    @fields.depends('mandate')
+    def on_change_mandate(self):
+        if self.mandate:
+            self.type = self.mandate.type
         else:
             self.type = None
             self.debtor = ''
 
-    @fields.depends('group', 'sepa_mandate', 'unit')
+    @fields.depends('group', 'mandate', 'unit')
     def on_change_with_company(self, name=None):
         if self.group:
             return self.group.company.id
-        elif self.sepa_mandate:
-            return self.sepa_mandate.company.id
+        elif self.mandate:
+            return self.mandate.company.id
         elif self.unit:
             return self.unit.company.id
 
-    @fields.depends('sepa_mandate', 'unit')
+    @fields.depends('mandate', 'unit')
     def on_change_with_sepa_end_to_end_id(self, name=None):
         if self.unit:
             return self.unit.name
-        elif self.sepa_mandate:
-            return self.sepa_mandate.identification
+        elif self.mandate:
+            return self.mandate.identification
 
     @classmethod
-    def get_unit_name(cls, condopayments, name):
-        return dict([(p.id, p.unit.name if p.unit else None) for p in condopayments])
+    def get_unit_name(cls, payments, name):
+        return dict([(p.id, p.unit.name if p.unit else None) for p in payments])
 
     @classmethod
     def search_unit_name(cls, name, domain):
@@ -817,8 +832,8 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         )
 
     @classmethod
-    def get_debtor(cls, condopayments, name):
-        return dict([(p.id, p.sepa_mandate.party.name if p.sepa_mandate else None) for p in condopayments])
+    def get_debtor(cls, payments, name):
+        return dict([(p.id, p.mandate.party.name if p.mandate else None) for p in payments])
 
     @classmethod
     def search_debtor(cls, name, domain):
@@ -832,10 +847,10 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
         # SELECT "c"."id" FROM "party_party" AS "a" INNER JOIN "condo_payment_sepa_mandate" AS "b"
         #              ON ("a"."id" = "b"."party") INNER JOIN "condo_payment" AS "c"
-        #              ON ("b"."id" = "c"."sepa_mandate") WHERE (UPPER("a"."name") LIKE UPPER(?))
+        #              ON ("b"."id" = "c"."mandate") WHERE (UPPER("a"."name") LIKE UPPER(?))
         query = (
             table1.join(table2, condition=table1.id == table2.party)
-            .join(table3, condition=table2.id == table3.sepa_mandate)
+            .join(table3, condition=table2.id == table3.mandate)
             .select(table3.id, where=Operator(table1.name, value))
         )
 
@@ -843,7 +858,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def order_debtor(cls, tables):
-        return cls.sepa_mandate.convert_order('sepa_mandate.party.name', tables, cls)
+        return cls.mandate.convert_order('mandate.party.name', tables, cls)
 
     @property
     def sequence_type(self):
@@ -861,7 +876,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         for payment in payments:
             if payment.state != 'draft':
                 cls.raise_user_error('delete_draft', (payment.rec_name))
-        super(CondoPayment, cls).delete(payments)
+        super(Payment, cls).delete(payments)
 
     @classmethod
     @ModelView.button
@@ -903,7 +918,7 @@ class CondoPayment(Workflow, ModelSQL, ModelView):
         pass
 
 
-class CondoMandate(Workflow, ModelSQL, ModelView):
+class Mandate(Workflow, ModelSQL, ModelView):
     'Condominium SEPA Mandate'
     __name__ = 'condo.payment.sepa.mandate'
     company = fields.Many2One(
@@ -911,7 +926,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         'Condominium',
         required=True,
         select=True,
-        domain=[('party.active', '=', True), ('is_Condominium', '=', True)],
+        domain=[('party.active', '=', True), ('is_condo', '=', True)],
         states={'readonly': Eval('state') != 'draft'},
         depends=['state'],
     )
@@ -924,7 +939,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         states={'readonly': Eval('state') != 'draft'},
         depends=['state', 'company'],
     )
-    condoparties = fields.One2Many('condo.party', 'sepa_mandate', 'Parties')
+    condoparties = fields.One2Many('condo.party', 'mandate', 'Parties')
     account_number = fields.Many2One(
         'bank.account.number',
         'Account Number',
@@ -971,12 +986,12 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         'State',
         readonly=True,
     )
-    payments = fields.One2Many('condo.payment', 'sepa_mandate', 'Payments')
+    payments = fields.One2Many('condo.payment', 'mandate', 'Payments')
     has_payments = fields.Function(fields.Boolean('Has Payments'), getter='get_has_payments')
 
     @classmethod
     def __setup__(cls):
-        super(CondoMandate, cls).__setup__()
+        super(Mandate, cls).__setup__()
         cls._order.insert(0, ('identification', 'ASC'))
         t = cls.__table__()
         cls._transitions |= set(
@@ -1045,7 +1060,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
 
     @classmethod
     def validate(cls, mandates):
-        super(CondoMandate, cls).validate(mandates)
+        super(Mandate, cls).validate(mandates)
         for mandate in mandates:
             mandate.validate_active()
             mandate.check_xml_characters()
@@ -1060,7 +1075,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                 cursor.execute(
                     *condopayments.select(
                         condopayments.id,
-                        where=(condopayments.sepa_mandate == self.id)
+                        where=(condopayments.mandate == self.id)
                         & ((condopayments.state == 'draft') | (condopayments.state == 'approved')),
                     )
                 )
@@ -1071,7 +1086,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                         (self.identification, len(ids)),
                     )
 
-                cursor.execute(*condoparties.select(condoparties.id, where=(condoparties.sepa_mandate == self.id)))
+                cursor.execute(*condoparties.select(condoparties.id, where=(condoparties.mandate == self.id)))
                 ids = [ids for (ids,) in cursor.fetchall()]
                 if len(ids):
                     self.raise_user_warning(
@@ -1084,7 +1099,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                         red_sql = reduce_ids(condoparties.id, sub_ids)
                         # Use SQL to prevent double validate loop
                         cursor.execute(
-                            *condoparties.update(columns=[condoparties.sepa_mandate], values=[None], where=red_sql)
+                            *condoparties.update(columns=[condoparties.mandate], values=[None], where=red_sql)
                         )
 
     def check_xml_characters(self):
@@ -1103,7 +1118,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
                 values = values.copy()
                 values['identification'] = None
             args.extend((mandates, values))
-        super(CondoMandate, cls).write(*args)
+        super(Mandate, cls).write(*args)
 
     @classmethod
     def copy(cls, mandates, default=None):
@@ -1114,7 +1129,7 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         default.setdefault('payments', [])
         default.setdefault('signature_date', None)
         default.setdefault('identification', None)
-        return super(CondoMandate, cls).copy(mandates, default=default)
+        return super(Mandate, cls).copy(mandates, default=default)
 
     @classmethod
     def get_has_payments(cls, mandates, name):
@@ -1126,10 +1141,8 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
         has_payments = dict.fromkeys([m.id for m in mandates], False)
 
         for sub_ids in grouped_slice(mandates):
-            red_sql = reduce_ids(payment.sepa_mandate, sub_ids)
-            cursor.execute(
-                *payment.select(payment.sepa_mandate, Literal(True), where=red_sql, group_by=payment.sepa_mandate)
-            )
+            red_sql = reduce_ids(payment.mandate, sub_ids)
+            cursor.execute(*payment.select(payment.mandate, Literal(True), where=red_sql, group_by=payment.mandate))
             has_payments.update(cursor.fetchall())
 
         return has_payments
@@ -1165,8 +1178,75 @@ class CondoMandate(Workflow, ModelSQL, ModelView):
             if (mandate.state == 'draft') or (mandate.state == 'canceled' and not mandate.has_payments):
                 continue
             cls.raise_user_error('delete_draft_canceled', mandate.rec_name)
-        super(CondoMandate, cls).delete(mandates)
+        super(Mandate, cls).delete(mandates)
 
 
-class CondoMandateReport(CompanyReport):
+class MandateReport(CompanyReport):
     __name__ = 'account.payment.sepa.mandate'
+
+
+class CheckMandatesList(ModelView):
+    'Check Mandates List'
+    __name__ = 'condo.check_mandates.result'
+    mandates = fields.Many2Many('condo.payment.sepa.mandate', None, None, 'Mandates not used', readonly=True)
+    units = fields.Many2Many('condo.unit', None, None, 'Units without mandates', readonly=True)
+
+
+class CheckMandates(Wizard):
+    'Check Mandates List'
+    __name__ = 'condo.check_mandates'
+    start_state = 'check'
+
+    check = StateTransition()
+    result = StateView(
+        'condo.check_mandates.result',
+        'condominium_payment_sepa.check_mandates_result',
+        [Button('OK', 'end', 'tryton-ok', True)],
+    )
+
+    def transition_check(self):
+
+        pool = Pool()
+        Unit = pool.get('condo.unit')
+        Mandate = pool.get('condo.payment.sepa.mandate')
+
+        mandates = Mandate.search_read(
+            [
+                [
+                    'OR',
+                    ('company', 'in', Transaction().context.get('active_ids')),
+                    ('company.parent', 'child_of', Transaction().context.get('active_ids')),
+                ],
+                ('state', 'not in', ('canceled',)),
+                ('condoparties', '=', None),
+            ],
+            fields_names=['id'],
+        )
+
+        units = Unit.search_read(
+            [
+                'OR',
+                ('company', 'in', Transaction().context.get('active_ids')),
+                ('company.parent', 'child_of', Transaction().context.get('active_ids')),
+            ],
+            fields_names=['id'],
+        )
+
+        units_with_mandate = Unit.search_read(
+            [
+                [
+                    'OR',
+                    ('company', 'in', Transaction().context.get('active_ids')),
+                    ('company.parent', 'child_of', Transaction().context.get('active_ids')),
+                ],
+                ('condoparties.mandate', '!=', None),
+            ],
+            fields_names=['id'],
+        )
+
+        self.result.mandates = [r['id'] for r in mandates]
+        self.result.units = [r['id'] for r in units if r not in units_with_mandate]
+        return 'result'
+
+    def default_result(self, fields):
+        return {'mandates': [p.id for p in self.result.mandates], 'units': [p.id for p in self.result.units]}

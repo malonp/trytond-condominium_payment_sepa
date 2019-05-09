@@ -193,7 +193,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Mandate</field>
             <field name="model">condo.payment.sepa.mandate</field>
             <field name="report_name">condo.payment.sepa.mandate</field>
-            <field name="report">condominium_payment_sepa/report/mandate.odt</field>
+            <field name="report">condominium_payment_sepa/report/mandate_es.fodt</field>
         </record>
         <record model="ir.action.keyword" id="report_condo_mandate_keyword">
             <field name="keyword">form_print</field>

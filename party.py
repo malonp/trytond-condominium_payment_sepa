@@ -32,7 +32,7 @@ __all__ = ['Party', 'PartyReplace']
 class Party(metaclass=PoolMeta):
     __name__ = 'party.party'
     companies = fields.One2Many('company.company', 'party', 'Companies')
-    sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'party', 'SEPA Mandates')
+    mandates = fields.One2Many('condo.payment.sepa.mandate', 'party', 'SEPA Mandates')
 
     @classmethod
     def validate(cls, parties):

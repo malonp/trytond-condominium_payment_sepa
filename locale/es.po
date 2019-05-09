@@ -23,11 +23,11 @@ msgctxt "field:bank.account.number,mandates:"
 msgid "Mandates"
 msgstr "Ordenes de Domiciliación"
 
-msgctxt "field:company.company,sepa_mandates:"
+msgctxt "field:company.company,mandates:"
 msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
-msgctxt "field:company.company,groups_payments:"
+msgctxt "field:company.company,groups:"
 msgid "Condominium Payment Group"
 msgstr "Facturaciones de la Comunidad"
 
@@ -68,11 +68,11 @@ msgid "OK"
 msgstr "Aceptar"
 
 
-msgctxt "field:condo.party,sepa_mandate:"
+msgctxt "field:condo.party,mandate:"
 msgid "Mandate"
 msgstr "Orden de Domiliación"
 
-msgctxt "help:condo.party,sepa_mandate:"
+msgctxt "help:condo.party,mandate:"
 msgid "SEPA Mandate of this party for the unit"
 msgstr "Orden de domiciliación de este tercero para recibos del inmueble"
 
@@ -85,7 +85,7 @@ msgctxt "field:party.party,companies:"
 msgid "Companies"
 msgstr "Com. de Propietarios"
 
-msgctxt "field:party.party,sepa_mandates:"
+msgctxt "field:party.party,mandates:"
 msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
@@ -229,7 +229,7 @@ msgctxt "field:condo.payment,amount:"
 msgid "Amount"
 msgstr "Importe"
 
-msgctxt "field:condo.payment,sepa_mandate:"
+msgctxt "field:condo.payment,mandate:"
 msgid "Mandate"
 msgstr "Orden de Domiciliación"
 
