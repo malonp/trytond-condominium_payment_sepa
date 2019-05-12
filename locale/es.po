@@ -2,16 +2,32 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
+msgctxt "field:bank,subset:"
+msgid "ASCII ISO20022"
+msgstr "ASCII ISO20022"
+
+msgctxt "field:bank,country_subset:"
+msgid "Extended Character Set"
+msgstr "Conjunto Extendido de Caracteres"
+
+msgctxt "help:bank,subset:"
+msgid "Use Unicode Character Subset defined in ISO20022 for SEPA schemes"
+msgstr "Utilizar el subconjuto de caracteres restringidos en ISO20022"
+
+msgctxt "help:bank,country_subset:"
+msgid "Country Extended Character Set"
+msgstr "Extension del conjunto de caracteres nacionales"
+
 
 msgctxt "field:bank.account.number,mandates:"
 msgid "Mandates"
 msgstr "Ordenes de Domiciliación"
 
-msgctxt "field:company.company,sepa_mandates:"
+msgctxt "field:company.company,mandates:"
 msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
-msgctxt "field:company.company,groups_payments:"
+msgctxt "field:company.company,groups:"
 msgid "Condominium Payment Group"
 msgstr "Facturaciones de la Comunidad"
 
@@ -28,11 +44,35 @@ msgid "Code used in the SEPA Creditor Identifier"
 msgstr "Código utilizado en la obtención del identificador del acreedor (AT-02)"
 
 
-msgctxt "field:condo.party,sepa_mandate:"
+msgctxt "field:condo.check_mandates.result,mandates:"
+msgid "Mandates not used"
+msgstr "Domiciliaciones sin utilizar"
+
+msgctxt "field:condo.check_mandates.result,units:"
+msgid "Units without mandates"
+msgstr "Inmuebles sin domiciliación"
+
+
+msgctxt "view:condo.check_mandates.result:"
+msgid "Check Mandates"
+msgstr "Comprobar Domiciliaciones"
+
+
+msgctxt "model:ir.action,name:wizard_check_mandates"
+msgid "Check Mandates List"
+msgstr "Comprobar Domiciliaciones"
+
+
+msgctxt "wizard_button:condo.check_mandates,result,end:"
+msgid "OK"
+msgstr "Aceptar"
+
+
+msgctxt "field:condo.party,mandate:"
 msgid "Mandate"
 msgstr "Orden de Domiliación"
 
-msgctxt "help:condo.party,sepa_mandate:"
+msgctxt "help:condo.party,mandate:"
 msgid "SEPA Mandate of this party for the unit"
 msgstr "Orden de domiciliación de este tercero para recibos del inmueble"
 
@@ -45,7 +85,7 @@ msgctxt "field:party.party,companies:"
 msgid "Companies"
 msgstr "Com. de Propietarios"
 
-msgctxt "field:party.party,sepa_mandates:"
+msgctxt "field:party.party,mandates:"
 msgid "SEPA Mandates"
 msgstr "Ordenes de Domiciliación"
 
@@ -81,6 +121,22 @@ msgstr "Suma de Control"
 msgctxt "field:condo.payment.pain,state:"
 msgid "State"
 msgstr "Estado"
+
+msgctxt "field:condo.payment.pain,subset:"
+msgid "ASCII ISO20022"
+msgstr "ASCII ISO20022"
+
+msgctxt "field:condo.payment.pain,country_subset:"
+msgid "Extended Character Set"
+msgstr "Conjunto Extendido de Caracteres"
+
+msgctxt "help:condo.payment.pain,subset:"
+msgid "Use Unicode Character Subset defined in ISO20022 for SEPA schemes"
+msgstr "Utilizar el subconjuto de caracteres restringidos en ISO20022"
+
+msgctxt "help:condo.payment.pain,country_subset:"
+msgid "Country Extended Character Set"
+msgstr "Extension del conjunto de caracteres nacionales"
 
 
 msgctxt "field:condo.payment.group,reference:"
@@ -173,7 +229,7 @@ msgctxt "field:condo.payment,amount:"
 msgid "Amount"
 msgstr "Importe"
 
-msgctxt "field:condo.payment,sepa_mandate:"
+msgctxt "field:condo.payment,mandate:"
 msgid "Mandate"
 msgstr "Orden de Domiciliación"
 
@@ -208,7 +264,7 @@ msgstr "Tercero"
 
 msgctxt "field:condo.payment.sepa.mandate,condoparties:"
 msgid "Parties"
-msgstr "Partícipes"
+msgstr "Terceros"
 
 msgctxt "field:condo.payment.sepa.mandate,account_number:"
 msgid "Account Number"
@@ -563,7 +619,7 @@ msgstr "Facturaciones"
 
 msgctxt "model:ir.ui.menu,name:menu_payment_pain_form"
 msgid "SDD Messages"
-msgstr "Mensajes SDD"
+msgstr "Ficheros SEPA"
 
 
 msgctxt "model:ir.ui.menu,name:menu_payment_configuration_form"
@@ -620,10 +676,6 @@ msgid "The reference must be unique for each condominium!"
 msgstr "La referencia debe ser unica para cada comunidad"
 
 msgctxt "error:condo.payment.group:"
-msgid "PaymentGroup \"%s\" is in readonly state"
-msgstr "La facturacion \"%s\" esta en modo de solo lectura"
-
-msgctxt "error:condo.payment.group:"
 msgid "PaymentGroup \"%s\" has payments approved with earlier date."
 msgstr "La facturacion \"%s\" tiene recibos aprobados con fecha anterior a la especificada"
 
@@ -642,10 +694,6 @@ msgstr "La Comunidad de Propietarios debe tener una identificación del acreedor
 msgctxt "error:condo.payment:"
 msgid "Payment \"%s\" must be in draft before deletion."
 msgstr "El recibo \"%s\" debe estar en estado borrador para su eliminación"
-
-msgctxt "error:condo.payment:"
-msgid "Payment of \"%s\" is not in draft state."
-msgstr "El recibo de \"%s\" no esta en estado borrador"
 
 msgctxt "error:condo.payment:"
 msgid "Payment of \"%s\" has an invalid mandate \"%s\""
@@ -682,6 +730,14 @@ msgstr "No se puede anular la domiciliación \"%s\".\nHay %s recibos en borrador
 msgctxt "error:condo.payment.sepa.mandate:"
 msgid "Mandate \"%s\" will be canceled as mean of payment in %d unit(s)/apartment(s)!"
 msgstr "La domiciliacion \"%s\" será cancelada como medio de pago en %d inmueble(s)!"
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "Mandate Identification can't contain 2 consecutive '/'"
+msgstr "El campo de identificación no debe contener 2 '/' consecutivos"
+
+msgctxt "error:condo.payment.sepa.mandate:"
+msgid "Mandate Identification can't start or end with '/' character"
+msgstr "El campo de identificación no debe comenzar o acabar con el caracter '/'"
 
 msgctxt "error:party.party:"
 msgid "%d mandate(s) of this party will be canceled!"

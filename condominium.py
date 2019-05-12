@@ -31,17 +31,14 @@ __all__ = ['CondoParty', 'Unit']
 
 class CondoParty(metaclass=PoolMeta):
     __name__ = 'condo.party'
-    sepa_mandate = fields.Many2One('condo.payment.sepa.mandate', 'Mandate',
+    mandate = fields.Many2One(
+        'condo.payment.sepa.mandate',
+        'Mandate',
         help="SEPA Mandate of this party for the unit",
-        depends=['company'],
-        domain=[If(Bool(Eval('company')),
-                     [
-                         ('company', '=', Eval('company')),
-                     ],[]),
-                ('state', 'not in', ['canceled']),
-               ],
+        depends=['company', 'state'],
+        domain=[If(Bool(Eval('company')), [('company', '=', Eval('company'))], []), ('state', 'not in', ['canceled'])],
         ondelete='SET NULL',
-        )
+    )
 
     @classmethod
     def validate(cls, condoparties):
@@ -50,22 +47,24 @@ class CondoParty(metaclass=PoolMeta):
             condoparty.unique_role_and_has_mandate()
 
     def unique_role_and_has_mandate(self):
-        if self.sepa_mandate:
+        if self.mandate:
             condoparties = Pool().get('condo.party').__table__()
             cursor = Transaction().connection.cursor()
 
-            cursor.execute(*condoparties.select(
-                                 condoparties.id,
-                                 where=(condoparties.unit == self.unit.id) &
-                                       (condoparties.role == self.role) &
-                                       (condoparties.sepa_mandate != None)))
+            cursor.execute(
+                *condoparties.select(
+                    condoparties.id,
+                    where=(condoparties.unit == self.unit.id)
+                    & (condoparties.role == self.role)
+                    & (condoparties.mandate != None),
+                )
+            )
 
             ids = [ids for (ids,) in cursor.fetchall()]
-            if len(ids)>1:
-                self.raise_user_error(
-                    "Cant be two or more parties with mandates and the same role!")
+            if len(ids) > 1:
+                self.raise_user_error("Cant be two or more parties with mandates and the same role!")
 
 
 class Unit(metaclass=PoolMeta):
     __name__ = 'condo.unit'
-    payments = fields.One2Many( 'condo.payment', 'unit', 'Payments')
+    payments = fields.One2Many('condo.payment', 'unit', 'Payments')

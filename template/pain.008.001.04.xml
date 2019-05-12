@@ -67,7 +67,7 @@ this repository contains the full copyright notices and license terms. -->
                 <InstdAmt py:attrs="{'Ccy': payment.currency.code}">${payment.amount}</InstdAmt>
                 <!-- ChrgBr --> <!-- EPC only at payment information level -->
                 <DrctDbtTx>
-                    <MndtRltdInf py:with="mandate = payment.sepa_mandate">
+                    <MndtRltdInf py:with="mandate = payment.mandate">
                         <MndtId>${mandate.identification}</MndtId>
                         <DtOfSgntr>${mandate.signature_date.isoformat()}</DtOfSgntr>
                         <!-- AmdmntInd -->

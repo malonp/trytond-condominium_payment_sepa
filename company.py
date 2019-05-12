@@ -33,35 +33,37 @@ __all__ = ['Company']
 
 class Company(metaclass=PoolMeta):
     __name__ = 'company.company'
-    sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'company',
-        'SEPA Mandates')
-    groups_payments = fields.One2Many('condo.payment.group', 'company', 'Condominium Payment Group',
-        readonly=True)
-    creditor_business_code = fields.Char('Creditor Business Code', size=3,
-       help='Code used in the SEPA Creditor Identifier')
+    mandates = fields.One2Many('condo.payment.sepa.mandate', 'company', 'SEPA Mandates')
+    groups = fields.One2Many('condo.payment.group', 'company', 'Condominium Payment Group', readonly=True)
+    creditor_business_code = fields.Char(
+        'Creditor Business Code', size=3, help='Code used in the SEPA Creditor Identifier'
+    )
     sepa_creditor_identifier = fields.Char('SEPA Creditor Identifier', size=35)
 
     @classmethod
     def __setup__(cls):
         super(Company, cls).__setup__()
         t = cls.__table__()
-        cls._error_messages.update({
+        cls._error_messages.update(
+            {
                 'invalid_creditor_identifier': ('SEPA Creditor Identifier "%s" of "%s" is not valid'),
                 'without_creditor_identifier': ('Company "%s" has not VAT Code defined'),
-                })
+            }
+        )
         cls._sql_constraints += [
-            ('condo_credid_uniq', Unique(t,t.sepa_creditor_identifier),
-                'This sepa creditor identifier is already in use!'),
+            (
+                'condo_credid_uniq',
+                Unique(t, t.sepa_creditor_identifier),
+                'This sepa creditor identifier is already in use!',
+            )
         ]
-        cls._buttons.update({
-                'calculate_sepa_creditor_identifier': {
-                    'invisible': Bool(Eval('sepa_creditor_identifier', False)),
-                    }
-                })
+        cls._buttons.update(
+            {'calculate_sepa_creditor_identifier': {'invisible': Bool(Eval('sepa_creditor_identifier', False))}}
+        )
 
     @staticmethod
     def default_creditor_business_code():
-        return 'ZZZ'
+        return '000'
 
     @classmethod
     def validate(cls, companies):
@@ -73,24 +75,28 @@ class Company(metaclass=PoolMeta):
         if not self.sepa_creditor_identifier:
             return
         if not is_valid(self.sepa_creditor_identifier):
-            self.raise_user_error('invalid_creditor_identifier',
-                (self.sepa_creditor_identifier, self.rec_name))
+            self.raise_user_error('invalid_creditor_identifier', (self.sepa_creditor_identifier, self.rec_name))
 
     @classmethod
     @ModelView.button
     def calculate_sepa_creditor_identifier(cls, companies, _save=True):
         for company in companies:
             if not company.party.tax_identifier:
-                cls.raise_user_error('without_creditor_identifier',
-                    (company.party.name))
+                cls.raise_user_error('without_creditor_identifier', (company.party.name))
 
-            number = _to_base10(company.party.tax_identifier.code[:2] + '00' +
-                company.creditor_business_code +
-                company.party.tax_identifier.code[2:].upper())
+            number = _to_base10(
+                company.party.tax_identifier.code[:2]
+                + '00'
+                + company.creditor_business_code
+                + company.party.tax_identifier.code[2:].upper()
+            )
             check_sum = mod_97_10.calc_check_digits(number[:-2])
-            company.sepa_creditor_identifier = (company.party.tax_identifier.code[:2] + check_sum +
-                company.creditor_business_code +
-                company.party.tax_identifier.code[2:].upper())
+            company.sepa_creditor_identifier = (
+                company.party.tax_identifier.code[:2]
+                + check_sum
+                + company.creditor_business_code
+                + company.party.tax_identifier.code[2:].upper()
+            )
         if _save:
             cls.save(companies)
 

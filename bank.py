@@ -22,10 +22,34 @@
 
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
+from trytond.pyson import Eval, Not, Bool
 from trytond.tools import reduce_ids, grouped_slice
 from trytond.transaction import Transaction
 
-__all__ = ['BankAccount', 'BankAccountNumber']
+from . import sepadecode
+
+EPC_COUNTRIES = list(sepadecode._countries)
+
+
+__all__ = ['Bank', 'BankAccount', 'BankAccountNumber']
+
+
+class Bank(metaclass=PoolMeta):
+    __name__ = 'bank'
+    subset = fields.Boolean(
+        'ASCII ISO20022', help=('Use Unicode Character Subset defined in ISO20022 for SEPA schemes')
+    )
+    country_subset = fields.Many2One(
+        'country.country',
+        'Extended Character Set',
+        domain=[('code', 'in', EPC_COUNTRIES)],
+        help=('Country Extended Character Set'),
+        states={'invisible': Not(Bool(Eval('subset')))},
+    )
+
+    @staticmethod
+    def default_subset():
+        return False
 
 
 class BankAccount(metaclass=PoolMeta):
@@ -38,44 +62,44 @@ class BankAccount(metaclass=PoolMeta):
             bankaccount.validate_active()
 
     def validate_active(self):
-        #Cancel mandates with account number of this bank account.
+        # Cancel mandates with account number of this bank account.
         if (self.id > 0) and not self.active:
             mandates = Pool().get('condo.payment.sepa.mandate').__table__()
             condoparties = Pool().get('condo.party').__table__()
             cursor = Transaction().connection.cursor()
 
             red_sql = reduce_ids(mandates.account_number, [x.id for x in self.numbers])
-            cursor.execute(*mandates.select(mandates.id,
-                                            mandates.identification,
-                                        where=red_sql &
-                                              (mandates.state != 'canceled')))
+            cursor.execute(
+                *mandates.select(mandates.id, mandates.identification, where=red_sql & (mandates.state != 'canceled'))
+            )
 
             for id, identification in cursor.fetchall():
-                cursor.execute(*condoparties.select(
-                                     condoparties.id,
-                                     where=(condoparties.sepa_mandate == id) &
-                                           (condoparties.active == True)))
+                cursor.execute(
+                    *condoparties.select(
+                        condoparties.id, where=(condoparties.mandate == id) & (condoparties.active == True)
+                    )
+                )
 
                 ids = [ids for (ids,) in cursor.fetchall()]
                 if len(ids):
-                    self.raise_user_warning('warn_deactive_mandate.%d' % id,
-                        'Mandate "%s" will be canceled and deactivate as mean of payment in %d unit(s)/apartment(s)!', (identification, len(ids)))
+                    self.raise_user_warning(
+                        'warn_deactive_mandate.%d' % id,
+                        'Mandate "%s" will be canceled and deactivate as mean of payment in %d unit(s)/apartment(s)!',
+                        (identification, len(ids)),
+                    )
 
                     # Use SQL to prevent double validate loop
-                    cursor.execute(*mandates.update(
-                            columns=[mandates.state],
-                            values=['canceled'],
-                            where=(mandates.id == id)))
+                    cursor.execute(
+                        *mandates.update(columns=[mandates.state], values=['canceled'], where=(mandates.id == id))
+                    )
 
                     for sub_ids in grouped_slice(ids):
                         red_sql = reduce_ids(condoparties.id, sub_ids)
-                        cursor.execute(*condoparties.update(
-                                columns=[condoparties.sepa_mandate],
-                                values=[None],
-                                where=red_sql))
+                        cursor.execute(
+                            *condoparties.update(columns=[condoparties.mandate], values=[None], where=red_sql)
+                        )
 
 
 class BankAccountNumber(metaclass=PoolMeta):
     __name__ = 'bank.account.number'
-    mandates = fields.One2Many('condo.payment.sepa.mandate',
-        'account_number', 'Mandates')
+    mandates = fields.One2Many('condo.payment.sepa.mandate', 'account_number', 'Mandates')

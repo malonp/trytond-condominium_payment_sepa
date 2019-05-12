@@ -3,8 +3,8 @@
 this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath expr="/form/notebook/page[@id='condominium']" position="before">
-        <page string="Mandates" id="condomandates">
-            <field name="sepa_mandates" colspan="4" widget="one2many"/>
+        <page string="Mandates" id="mandates">
+            <field name="mandates" colspan="4" widget="one2many"/>
         </page>
     </xpath>
 </data>

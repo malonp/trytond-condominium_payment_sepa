@@ -49,7 +49,7 @@ this repository contains the full copyright notices and license terms. -->
 
 <!-- Menu -->
         <menuitem name="Configuration" parent="menu_condofinancial_form"
-            sequence="1" id="menu_payment_configuration_form" icon="tryton-preferences"/>
+            sequence="1" id="menu_payment_configuration_form" icon="tryton-settings"/>
 
         <menuitem name="Mandates" parent="menu_payment_configuration_form"
             sequence="10" action="act_configuration_mandate_form"

@@ -26,14 +26,13 @@ from trytond.tools import reduce_ids, grouped_slice
 from trytond.transaction import Transaction
 
 
-__all__ = ['Party']
+__all__ = ['Party', 'PartyReplace']
 
 
 class Party(metaclass=PoolMeta):
     __name__ = 'party.party'
     companies = fields.One2Many('company.company', 'party', 'Companies')
-    sepa_mandates = fields.One2Many('condo.payment.sepa.mandate', 'party',
-        'SEPA Mandates')
+    mandates = fields.One2Many('condo.payment.sepa.mandate', 'party', 'SEPA Mandates')
 
     @classmethod
     def validate(cls, parties):
@@ -42,24 +41,35 @@ class Party(metaclass=PoolMeta):
             party.validate_mandates()
 
     def validate_mandates(self):
-        #Cancel party's mandates on party deactivate
+        # Cancel party's mandates on party deactivate
         if (self.id > 0) and not self.active:
             mandates = Pool().get('condo.payment.sepa.mandate').__table__()
             cursor = Transaction().connection.cursor()
 
-            cursor.execute(*mandates.select(mandates.id,
-                                        where=(mandates.party == self.id) &
-                                              (mandates.state != 'canceled')))
+            cursor.execute(
+                *mandates.select(mandates.id, where=(mandates.party == self.id) & (mandates.state != 'canceled'))
+            )
 
             ids = [ids for (ids,) in cursor.fetchall()]
             if len(ids):
-                self.raise_user_warning('warn_cancel_mandates_of_party.%d' % self.id,
-                    '%d mandate(s) of this party will be canceled!', len(ids))
+                self.raise_user_warning(
+                    'warn_cancel_mandates_of_party.%d' % self.id,
+                    '%d mandate(s) of this party will be canceled!',
+                    len(ids),
+                )
 
                 for sub_ids in grouped_slice(ids):
                     red_sql = reduce_ids(mandates.id, sub_ids)
                     # Use SQL to prevent double validate loop
-                    cursor.execute(*mandates.update(
-                            columns=[mandates.state],
-                            values=['canceled'],
-                            where=red_sql))
+                    cursor.execute(*mandates.update(columns=[mandates.state], values=['canceled'], where=red_sql))
+
+
+class PartyReplace(metaclass=PoolMeta):
+    __name__ = 'party.replace'
+
+    @classmethod
+    def fields_to_replace(cls):
+        return super(PartyReplace, cls).fields_to_replace() + [
+            ('condo.payment', 'party'),
+            ('condo.payment.sepa.mandate', 'party'),
+        ]

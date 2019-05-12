@@ -90,13 +90,13 @@ this repository contains the full copyright notices and license terms. -->
             <py:for each="payment in payments">
             <DrctDbtTxInf>
                 <PmtId>
-                    <EndToEndId>${payment.sepa_end_to_end_id}</EndToEndId>
+                    <EndToEndId>${normalize(pain.country_subset, payment.sepa_end_to_end_id)[:35] if pain.subset else payment.sepa_end_to_end_id[:35]}</EndToEndId>
                 </PmtId>
                 <!-- PmtTpInf -->
                 <InstdAmt py:attrs="{'Ccy': payment.currency.code}">${'{:.2f}'.format(payment.amount)}</InstdAmt>
                 <!-- ChrgBr --> <!-- EPC only at payment information level -->
                 <DrctDbtTx>
-                    <MndtRltdInf py:with="mandate = payment.sepa_mandate">
+                    <MndtRltdInf py:with="mandate = payment.mandate">
                         <MndtId>${mandate.identification}</MndtId>
                         <DtOfSgntr>${mandate.signature_date.isoformat()}</DtOfSgntr>
                         <!-- AmdmntInd -->
@@ -112,14 +112,14 @@ this repository contains the full copyright notices and license terms. -->
                 </DrctDbtTx>
                 <!-- UltmtCdtr -->
                 <DbtrAgt>
-                    ${FinancialInstitution(payment.sepa_mandate.account_number.account.bank, only_bic=True)}
+                    ${FinancialInstitution(payment.mandate.account_number.account.bank, only_bic=True)}
                 </DbtrAgt>
                 <!-- DbtrAgtAcct -->
                 <Dbtr>
-                    ${PartyIdentification(payment.sepa_mandate, id=False)}
+                    ${PartyIdentification(payment.mandate, id=False)}
                 </Dbtr>
                 <DbtrAcct>
-                    ${Account(payment.sepa_mandate.account_number, currency=False)}
+                    ${Account(payment.mandate.account_number, currency=False)}
                 </DbtrAcct>
                 <!-- UltmtDbtr -->
                 <!-- InstrForCdtrAgt -->
@@ -128,7 +128,7 @@ this repository contains the full copyright notices and license terms. -->
                 <!-- Tax -->
                 <!-- RltdRmtInf -->
                 <RmtInf py:if="payment.description">
-                    <Ustrd>${payment.description[:140]}</Ustrd>
+                    <Ustrd>${normalize(pain.country_subset, payment.description)[:140] if pain.subset else payment.description[:140]}</Ustrd>
                 </RmtInf>
             </DrctDbtTxInf>
             </py:for>

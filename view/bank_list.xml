@@ -2,11 +2,12 @@
 <!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
 this repository contains the full copyright notices and license terms. -->
 <data>
+
     <xpath
-        expr="/form/field[@name='party']"
+        expr="/tree/field[@name='code']"
         position="after">
-        <newline/>
-        <label name="mandate"/>
-        <field name="mandate" colspan="9"/>
+    <field name="subset"/>
+    <field name="country_subset"/>
     </xpath>
+
 </data>
