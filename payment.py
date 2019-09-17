@@ -121,7 +121,6 @@ class CondoPain(Workflow, ModelSQL, ModelView):
     state = fields.Selection(
         [('draft', 'Draft'), ('generated', 'Generated'), ('booked', 'Booked'), ('rejected', 'Rejected')],
         'State',
-        readonly=True,
         select=True,
     )
     subset = fields.Boolean(
@@ -661,7 +660,6 @@ class Payment(Workflow, ModelSQL, ModelView):
             ('failed', 'Failed'),
         ],
         'State',
-        readonly=True,
         select=True,
     )
 
@@ -985,7 +983,6 @@ class Mandate(Workflow, ModelSQL, ModelView):
     state = fields.Selection(
         [('draft', 'Draft'), ('requested', 'Requested'), ('validated', 'Validated'), ('canceled', 'Canceled')],
         'State',
-        readonly=True,
         select=True,
     )
     payments = fields.One2Many('condo.payment', 'mandate', 'Payments')
