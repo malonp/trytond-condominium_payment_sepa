@@ -70,17 +70,17 @@ class CondoPain(Workflow, ModelSQL, ModelView):
     'Condominium Payment Initation Message'
     __name__ = 'condo.payment.pain'
     reference = fields.Char(
-        'Reference', required=True, states={'readonly': Eval('state') != 'draft'}, depends=['state']
+        'Reference', depends=['state'], required=True, select=True, states={'readonly': Eval('state') != 'draft'}
     )
     bank = fields.Function(fields.Many2One('bank', 'Creditor Agent'), 'on_change_with_bank')
     company = fields.Many2One(
         'company.company',
         'Initiating Party',
-        domain=[('party.active', '=', True)],
-        select=True,
-        required=True,
-        states={'readonly': Eval('state') != 'draft'},
         depends=['state'],
+        domain=[('party.active', '=', True)],
+        required=True,
+        select=True,
+        states={'readonly': Eval('state') != 'draft'},
     )
     sepa_receivable_flavor = fields.Selection(
         [
@@ -89,9 +89,9 @@ class CondoPain(Workflow, ModelSQL, ModelView):
             # ('pain.008.001.04', 'pain.008.001.04'),
         ],
         'Receivable Flavor',
+        depends=['state'],
         required=True,
         states={'readonly': Eval('state') != 'draft', 'required': Eval('state') != 'draft'},
-        depends=['state'],
         translate=False,
     )
     groups = fields.One2Many(
@@ -114,21 +114,20 @@ class CondoPain(Workflow, ModelSQL, ModelView):
             # Next condition implies one unique Agent Creditor (bank) per message
             If(Bool(Eval('bank')), [('account_number.account.bank', '=', Eval('bank'))], []),
         ],
-        states={'readonly': Eval('state') != 'draft'},
         depends=['bank', 'company', 'state'],
+        states={'readonly': Eval('state') != 'draft'},
     )
     message = fields.Text('Message', states={'readonly': Eval('state') != 'draft'}, depends=['state'])
     state = fields.Selection(
         [('draft', 'Draft'), ('generated', 'Generated'), ('booked', 'Booked'), ('rejected', 'Rejected')],
         'State',
-        readonly=True,
         select=True,
     )
     subset = fields.Boolean(
         'ASCII ISO20022',
+        depends=['state'],
         help=('Use Unicode Character Subset defined in ISO20022 for SEPA schemes'),
         states={'readonly': Eval('state') != 'draft'},
-        depends=['state'],
     )
     country_subset = fields.Many2One(
         'country.country',
@@ -335,30 +334,30 @@ class Group(ModelSQL, ModelView):
     __name__ = 'condo.payment.group'
     _rec_name = 'reference'
     reference = fields.Char(
-        'Reference', required=True, states={'readonly': Bool(Eval('readonly'))}, depends=['readonly']
+        'Reference', depends=['readonly'], required=True, select=True, states={'readonly': Bool(Eval('readonly'))}
     )
     company = fields.Many2One(
         'company.company',
         'Condominium',
         domain=[('party.active', '=', True), ('is_condo', '=', True)],
-        select=True,
         required=True,
+        select=True,
         states={'readonly': Eval('id', 0) > 0},
     )
-    pain = fields.Many2One('condo.payment.pain', 'Pain Message', ondelete='SET NULL')
+    pain = fields.Many2One('condo.payment.pain', 'Pain Message', ondelete='SET NULL', select=True)
     account_number = fields.Many2One(
         'bank.account.number',
         'Account Number',
-        ondelete='RESTRICT',
+        depends=['company', 'readonly'],
         domain=[
             If(Bool(Eval('company')), [('account.owners.companies', '=', Eval('company'))], []),
             ('account.owners.companies.is_condo', '=', True),
             If(Bool(Eval('readonly')), [], [('account.active', '=', True)]),
             ('type', '=', 'iban'),
         ],
-        states={'readonly': Bool(Eval('readonly'))},
-        depends=['company', 'readonly'],
+        ondelete='RESTRICT',
         required=True,
+        states={'readonly': Bool(Eval('readonly'))},
     )
     date = fields.Date('Debit Date', required=True, states={'readonly': Bool(Eval('readonly'))}, depends=['readonly'])
     payments = fields.One2Many('condo.payment', 'group', 'Payments')
@@ -368,10 +367,10 @@ class Group(ModelSQL, ModelView):
     sepa_charge_bearer = fields.Selection(
         [('DEBT', 'Debtor'), ('CRED', 'Creditor'), ('SHAR', 'Shared'), ('SLEV', 'Service Level')],
         'Charge Bearer',
+        depends=['readonly'],
         required=True,
         sort=False,
         states={'readonly': Bool(Eval('readonly'))},
-        depends=['readonly'],
     )
     nboftxs = fields.Function(fields.Integer('Number of Transactions'), 'get_nboftxs')
     ctrlsum = fields.Function(fields.Numeric('Control Sum', digits=(11, 2)), 'get_ctrlsum')
@@ -519,8 +518,7 @@ class Payment(Workflow, ModelSQL, ModelView):
     group = fields.Many2One(
         'condo.payment.group',
         'Group',
-        ondelete='RESTRICT',
-        required=True,
+        depends=['state'],
         domain=[
             If(
                 Eval('state') == 'draft',
@@ -538,8 +536,10 @@ class Payment(Workflow, ModelSQL, ModelView):
                 [],
             )
         ],
+        ondelete='RESTRICT',
+        required=True,
+        select=True,
         states={'readonly': Eval('id', 0) > 0},
-        depends=['state'],
     )
     company = fields.Function(
         fields.Many2One('company.company', 'Company'), getter='on_change_with_company', searcher='search_company'
@@ -547,6 +547,7 @@ class Payment(Workflow, ModelSQL, ModelView):
     unit = fields.Many2One(
         'condo.unit',
         'Unit',
+        depends=['group', 'party', 'mandate', 'state'],
         domain=[
             If(
                 Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
@@ -566,13 +567,12 @@ class Payment(Workflow, ModelSQL, ModelView):
             )
         ],
         states={'readonly': Eval('state') != 'draft'},
-        depends=['group', 'party', 'mandate', 'state'],
     )
     unit_name = fields.Function(fields.Char('Unit'), getter='get_unit_name', searcher='search_unit_name')
     party = fields.Many2One(
         'party.party',
         'Ultimate Debtor',
-        required=True,
+        depends=['company', 'group', 'state', 'unit'],
         domain=[
             If(
                 Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
@@ -597,8 +597,8 @@ class Payment(Workflow, ModelSQL, ModelView):
                 ],
             )
         ],
+        required=True,
         states={'readonly': Eval('state') != 'draft'},
-        depends=['company', 'group', 'state', 'unit'],
     )
     description = fields.Char('Description', size=140, states={'readonly': Eval('state') != 'draft'})
     currency = fields.Many2One(
@@ -607,15 +607,14 @@ class Payment(Workflow, ModelSQL, ModelView):
     currency_digits = fields.Function(fields.Integer('Currency Digits'), 'on_change_with_currency_digits')
     amount = fields.Numeric(
         'Amount',
+        depends=['state', 'currency_digits'],
         digits=(11, Eval('currency_digits', 2)),
         states={'readonly': Eval('state') != 'draft', 'required': Eval('state') != 'draft'},
-        depends=['state', 'currency_digits'],
     )
     mandate = fields.Many2One(
         'condo.payment.sepa.mandate',
         'Mandate',
-        ondelete='RESTRICT',
-        required=True,
+        depends=['group', 'party', 'state', 'unit'],
         domain=[
             If(
                 Bool(Eval('state').in_(['processing', 'succeeded', 'failed'])),
@@ -631,22 +630,23 @@ class Payment(Workflow, ModelSQL, ModelView):
                 ],
             )
         ],
+        ondelete='RESTRICT',
+        required=True,
         states={'readonly': Eval('state') != 'draft'},
-        depends=['group', 'party', 'state', 'unit'],
     )
     debtor = fields.Function(fields.Char('Debtor'), getter='get_debtor', searcher='search_debtor')
     type = fields.Selection(
         [('recurrent', 'RCUR'), ('one-off', 'OOFF'), ('final', 'FNAL'), ('first', 'FRST')],
         'Sequence Type',
+        depends=['mandate', 'state'],
         required=True,
         states={'readonly': Eval('state').in_(['processing', 'succeeded', 'failed'])},
-        depends=['mandate', 'state'],
     )
     sepa_end_to_end_id = fields.Char(
         'SEPA End To End ID',
+        depends=['unit', 'mandate', 'state'],
         size=35,
         states={'readonly': Eval('state') != 'draft'},
-        depends=['unit', 'mandate', 'state'],
     )
     date = fields.Date(
         'Debit Date', required=True, states={'readonly': Eval('state') != 'draft'}, depends=['group', 'state']
@@ -660,7 +660,6 @@ class Payment(Workflow, ModelSQL, ModelView):
             ('failed', 'Failed'),
         ],
         'State',
-        readonly=True,
         select=True,
     )
 
@@ -924,27 +923,26 @@ class Mandate(Workflow, ModelSQL, ModelView):
     company = fields.Many2One(
         'company.company',
         'Condominium',
+        depends=['state'],
+        domain=[('party.active', '=', True), ('is_condo', '=', True)],
         required=True,
         select=True,
-        domain=[('party.active', '=', True), ('is_condo', '=', True)],
         states={'readonly': Eval('state') != 'draft'},
-        depends=['state'],
     )
     party = fields.Many2One(
         'party.party',
         'Party',
+        depends=['state', 'company'],
+        # domain=['OR', ('categories', '=', None), ('categories.name', 'not in', ['bank']),],
         required=True,
         select=True,
-        # domain=['OR', ('categories', '=', None), ('categories.name', 'not in', ['bank']),],
         states={'readonly': Eval('state') != 'draft'},
-        depends=['state', 'company'],
     )
     condoparties = fields.One2Many('condo.party', 'mandate', 'Parties')
     account_number = fields.Many2One(
         'bank.account.number',
         'Account Number',
-        ondelete='RESTRICT',
-        states={'readonly': Eval('state') == 'canceled', 'required': Eval('state') == 'validated'},
+        depends=['state', 'party'],
         domain=[
             ('type', '=', 'iban'),
             If(
@@ -954,37 +952,38 @@ class Mandate(Workflow, ModelSQL, ModelView):
             ),
             If(Bool(Eval('party')), [('account.owners', '=', Eval('party'))], []),
         ],
-        depends=['state', 'party'],
+        ondelete='RESTRICT',
+        states={'readonly': Eval('state') == 'canceled', 'required': Eval('state') == 'validated'},
     )
     identification = fields.Char(
         'Identification',
+        depends=['state', 'has_payments'],
         size=35,
         states={'readonly': Bool(Eval('has_payments')) == True, 'required': Eval('state') == 'validated'},
-        depends=['state', 'has_payments'],
     )
     type = fields.Selection(
         [('recurrent', 'Recurrent'), ('one-off', 'One-off')],
         'Type',
-        states={'readonly': Eval('state').in_(['validated', 'canceled'])},
         depends=['state'],
+        states={'readonly': Eval('state').in_(['validated', 'canceled'])},
     )
     scheme = fields.Selection(
         [('CORE', 'Core'), ('B2B', 'Business to Business')],
         'Scheme',
+        depends=['state'],
         required=True,
         states={'readonly': Eval('state').in_(['validated', 'canceled'])},
-        depends=['state'],
     )
     scheme_string = scheme.translated('scheme')
     signature_date = fields.Date(
         'Signature Date',
-        states={'readonly': Eval('state').in_(['validated', 'canceled']), 'required': Eval('state') == 'validated'},
         depends=['state'],
+        states={'readonly': Eval('state').in_(['validated', 'canceled']), 'required': Eval('state') == 'validated'},
     )
     state = fields.Selection(
         [('draft', 'Draft'), ('requested', 'Requested'), ('validated', 'Validated'), ('canceled', 'Canceled')],
         'State',
-        readonly=True,
+        select=True,
     )
     payments = fields.One2Many('condo.payment', 'mandate', 'Payments')
     has_payments = fields.Function(fields.Boolean('Has Payments'), getter='get_has_payments')
