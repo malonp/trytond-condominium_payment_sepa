@@ -117,7 +117,7 @@ this repository contains the full copyright notices and license terms. -->
         <record model="ir.action.act_window" id="act_condopaymentgroup_form">
             <field name="name">Payments Group</field>
             <field name="res_model">condo.payment.group</field>
-            <field name="domain" eval="[('date', '>', Date(delta_years=-1))]" pyson="1"/>
+            <field name="domain" eval="[('date', '>', Date(month=1,day=1,delta_years=-1))]" pyson="1"/>
         </record>
 
         <record model="ir.action.act_window" id="act_condopayment_form">
