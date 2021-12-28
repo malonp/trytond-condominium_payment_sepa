@@ -22,8 +22,8 @@
 
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
-from trytond.pyson import Eval, Not, Bool
-from trytond.tools import reduce_ids, grouped_slice
+from trytond.pyson import Bool, Eval, Not
+from trytond.tools import grouped_slice, reduce_ids
 from trytond.transaction import Transaction
 
 from . import sepadecode

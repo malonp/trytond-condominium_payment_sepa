@@ -90,7 +90,7 @@ this repository contains the full copyright notices and license terms. -->
             <py:for each="payment in payments">
             <DrctDbtTxInf>
                 <PmtId>
-                    <EndToEndId>${normalize(pain.country_subset, payment.sepa_end_to_end_id)[:35] if pain.subset else payment.sepa_end_to_end_id[:35]}</EndToEndId>
+                    <EndToEndId>${normalize(pain.country_subset, payment.sepa_end_to_end_id)[:35]}</EndToEndId>
                 </PmtId>
                 <!-- PmtTpInf -->
                 <InstdAmt py:attrs="{'Ccy': payment.currency.code}">${'{:.2f}'.format(payment.amount)}</InstdAmt>
@@ -128,7 +128,7 @@ this repository contains the full copyright notices and license terms. -->
                 <!-- Tax -->
                 <!-- RltdRmtInf -->
                 <RmtInf py:if="payment.description">
-                    <Ustrd>${normalize(pain.country_subset, payment.description)[:140] if pain.subset else payment.description[:140]}</Ustrd>
+                    <Ustrd>${normalize(pain.country_subset, payment.description)[:140]}</Ustrd>
                 </RmtInf>
             </DrctDbtTxInf>
             </py:for>

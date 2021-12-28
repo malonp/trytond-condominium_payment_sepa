@@ -22,21 +22,19 @@
 import datetime
 import os
 import unicodedata
-from itertools import groupby, chain
+from itertools import chain, groupby
 
 import genshi
 import genshi.template
 from sql import Column, Literal
 from sql.aggregate import Count, Max
-
-from trytond.pool import Pool
-from trytond.model import ModelSQL, ModelView, Workflow, fields, dualmethod, Unique
-from trytond.pyson import Eval, If, Not, Bool
-from trytond.transaction import Transaction
-from trytond.tools import reduce_ids, grouped_slice
-from trytond.wizard import Wizard, StateTransition, StateView, Button
-
+from trytond.model import ModelSQL, ModelView, Unique, Workflow, dualmethod, fields
 from trytond.modules.company import CompanyReport
+from trytond.pool import Pool
+from trytond.pyson import Bool, Eval, If, Not
+from trytond.tools import grouped_slice, reduce_ids
+from trytond.transaction import Transaction
+from trytond.wizard import Button, StateTransition, StateView, Wizard
 
 from . import sepadecode
 

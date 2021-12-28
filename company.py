@@ -20,13 +20,12 @@
 ##############################################################################
 
 
-from trytond.pool import PoolMeta
-from trytond.model import ModelView, fields, Unique
-from trytond.pyson import Eval, Bool
-
-from stdnum.iso7064 import mod_97_10
-from stdnum.eu.at_02 import is_valid, _to_base10
 import stdnum.exceptions
+from stdnum.eu.at_02 import _to_base10, is_valid
+from stdnum.iso7064 import mod_97_10
+from trytond.model import ModelView, Unique, fields
+from trytond.pool import PoolMeta
+from trytond.pyson import Bool, Eval
 
 __all__ = ['Company']
 
