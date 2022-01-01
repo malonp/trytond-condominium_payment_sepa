@@ -4,7 +4,7 @@ this repository contains the full copyright notices and license terms. -->
 <py:strip xmlns:py="http://genshi.edgewall.org/">
     <py:def function="PartyIdentification(obj, id=True, extra=False)">
                     <!-- EPC limits to 70 instead of 140 -->
-                    <Nm>${obj.party.name[:70]}</Nm>
+                    <Nm>${normalize(pain.country_subset, obj.party.name)[:70]}</Nm>
                     <py:with vars="address = obj.party.address_get()">
                         <PstlAdr py:if="extra and address">
                             ${PostalAddress(address)}
