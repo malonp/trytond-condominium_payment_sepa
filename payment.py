@@ -21,13 +21,11 @@
 
 import datetime
 import os
-import unicodedata
 from itertools import chain, groupby
 
 import genshi
 import genshi.template
 from sql import Column, Literal
-from sql.aggregate import Count, Max
 from trytond.model import ModelSQL, ModelView, Unique, Workflow, dualmethod, fields
 from trytond.modules.company import CompanyReport
 from trytond.pool import Pool
